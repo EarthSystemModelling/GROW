@@ -1,13 +1,13 @@
 ## Read and process IGRAC's groundwater time series files
 
-'''To do Ricarda: Short summary of script'''
+'''To do me: Short summary of script'''
 
 # Configuration
 config = {
     "basepath" : "/mnt/storage/grow/Groundwater/",
     "wells": "Well_And_Monitoring_Data",
     "country_name_pos": 55, # position of first country letter in file path to extract country information
-    "output": {"name":"_V05",
+    "output": {"name":"_Ricarda",
                "data":"Wells_timeseries/wells_timeseries",
                "ts_attributes": "Wells_timeseries/wells_timeseries_attributes",
                "max_dist": "Statistics/max_distance",
@@ -24,7 +24,7 @@ config = {
                "par": "Wells_timeseries/wells_mul_par_all",
                "lost_per": "Statistics/wells_timeseries_drops",
                "duration": "GGMN_preprocessing_duration.txt"},
-    "small": False
+    "small": True
 }
 
 import os
@@ -33,11 +33,11 @@ import pandas as pd
 import numpy as np
 import warnings
 from dateutil.relativedelta import relativedelta
-from funcs_preprocessing import get_max_dist
-from funcs_preprocessing import trim_max_dist
-from funcs_preprocessing import extract_seq
-from funcs_preprocessing import fill_gaps
-from funcs_preprocessing import calc_trend
+from func_processing_gw_time_series import get_max_dist
+from func_processing_gw_time_series import trim_max_dist
+from func_processing_gw_time_series import extract_seq
+from func_processing_gw_time_series import fill_gaps
+from func_processing_gw_time_series import calc_trend
 
 warnings.filterwarnings("ignore")
 

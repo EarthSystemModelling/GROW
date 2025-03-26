@@ -5,7 +5,6 @@ from scipy.stats import spearmanr
 from datetime import datetime
 import calendar
 from scipy import interpolate
-from dateutil.relativedelta import relativedelta
 import operator
 import pymannkendall as mk
 
