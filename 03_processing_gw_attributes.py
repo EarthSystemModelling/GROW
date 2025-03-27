@@ -4,9 +4,9 @@
 config = {
     "basepath" : "/mnt/storage/grow/Groundwater/",
     "wells": "Well_And_Monitoring_Data",
-    "timeseries_att": "Wells_timeseries/wells_timeseries_attributes_V05.txt",
-    "timeseries" : "Wells_timeseries/wells_timeseries_V05.txt",
-    "output": {"name": "_V06",
+    "timeseries_att": "Wells_timeseries/wells_timeseries_attributes_Ricarda.txt",
+    "timeseries" : "Wells_timeseries/wells_timeseries_Ricarda.txt",
+    "output": {"name": "_Ricarda",
                "all":"Wells_attributes/wells_attributes_all.csv",
                "all_dups": "Wells_attributes/wells_attributes_all_dups.txt",
                "filtered": "Wells_attributes/wells_attributes",

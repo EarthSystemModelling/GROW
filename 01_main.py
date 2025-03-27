@@ -8,6 +8,7 @@ with open('saved_dictionary.pkl', 'wb') as f:
     pickle.dump(dictionary, f)
 
 with open('saved_dictionary.pkl', 'rb') as f:
+l
     loaded_dict = pickle.load(f)
 
 Anschließend sollen die einzelnen Skripte nacheinander durchlaufen. Dafür kannst du
