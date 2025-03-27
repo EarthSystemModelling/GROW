@@ -4,7 +4,6 @@ from dateutil.relativedelta import relativedelta
 import pandas as pd
 import os
 import xarray as xr
-import rasterio
 import geopandas as gpd
 
 ## get_paths

@@ -4,8 +4,8 @@
 
 config = {
     "basepath" : "/mnt/storage/grow/",
-    "wells" : "Groundwater/Wells_attributes/wells_attributes_V05.txt",
-    "timeseries": "Groundwater/Wells_timeseries/wells_timeseries_final_V05.txt",
+    "wells" : "Groundwater/Wells_attributes/wells_attributes_Ricarda.txt",
+    "timeseries": "Groundwater/Wells_timeseries/wells_timeseries_final_Ricarda.txt",
     "factors": {"dem": "Topography/MERIT_DEM/MERIT/MERIT_DEM.tif",
                 "slope": "Topography/Slope_MERIT_DEM/dtm_slope_merit.dem_m_250m_s0..0cm_2018_v1.0.tif",
                 "glim":{"data":'Soils_Geology/GLiM/glim_wgs84_0point5deg.txt.asc',"codes":"Soils_Geology/GLiM/Classnames.txt"},
