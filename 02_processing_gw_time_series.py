@@ -1,32 +1,8 @@
 ## Read and process IGRAC's groundwater time series files
 
-'''To do me: Short summary of script'''
+"""# TODO: Short summary of script"""
 
-# Configuration
-config = {
-    "basepath" : "/mnt/storage/grow/Groundwater/",
-    "wells": "Well_And_Monitoring_Data",
-    "country_name_pos": 55, # position of first country letter in file path to extract country information
-    "output": {"name":"_Ricarda",
-               "data":"Wells_timeseries/wells_timeseries",
-               "ts_attributes": "Wells_timeseries/wells_timeseries_attributes",
-               "max_dist": "Statistics/max_distance",
-               "lost_<2_records": "Wells_timeseries/lost_<2_records",
-               "lost_mul_par": "Wells_timeseries/lost_mul_par",
-               "lost_unrealistic_value": "Wells_timeseries/lost_unrealistic_value",
-               "lost_after_aggregation": "Wells_timeseries/lost_after_aggregation",
-               "lost_gap_length": "Wells_timeseries/lost_gap_length",
-               "lost_gap_amount": "Wells_timeseries/lost_gap_amount",
-               "plateau": "Wells_timeseries/wells_plateau",
-               "jumps": "Wells_timeseries/wells_jumps",
-               "depth_all":"Wells_timeseries/wells_depth_all_negative",
-               "depth_any":"Wells_timeseries/wells_depth_some_negative",
-               "par": "Wells_timeseries/wells_mul_par_all",
-               "lost_per": "Statistics/wells_timeseries_drops",
-               "duration": "GGMN_preprocessing_duration.txt"},
-    "small": True
-}
-
+import pickle
 import os
 from datetime import datetime
 import pandas as pd
@@ -41,6 +17,12 @@ from func_processing_gw_time_series import calc_trend
 
 warnings.filterwarnings("ignore")
 
+# Configuration
+with open('config.pkl', 'rb') as f:
+    all_configs = pickle.load(f)
+
+config = all_configs["config_02"]
+
 # Store start time
 startTime = datetime.now()
 
@@ -51,11 +33,11 @@ full_path = []
 for fold in folders:
     folder = config["basepath"]+config["wells"] + "/" + fold + "/" + "monitoring"
     full_path.append(folder)
-    if (os.path.exists(folder)==False): # if no monitoring folder exists in the path, delete path
+    if (os.path.exists(folder)==False):  # if no monitoring folder exists in the path, delete path
         shutil.rmtree(config["basepath"]+config["wells"] + "/" + fold)
 
 # Initiate variables
-counter = 0 # to get the total amount of well time series
+counter = 0  # to get the total amount of well time series
 
 data_lost_a = [] # dropped because empty or only one record
 data_lost_b = [] # dropped because too short after multiple parameter extraction
@@ -98,11 +80,11 @@ for path in full_path:
 
         # Save counter
         counter = counter + 1
-        pd.Series([str(datetime.now() - startTime),counter,file]).to_csv(config["basepath"]  + "counter" + config["output"]["name"] + ".txt")
+        pd.Series([str(datetime.now() - startTime),counter,file]).to_csv(config["basepath"] + "counter" + config["output"]["name"] + ".txt")
 
         # Read station
         raw = pd.read_excel(file, engine='openpyxl', sheet_name=0, skiprows=[1, 1], dtype={"ID": object})
-        raw.dropna(subset=["Value"],inplace = True,  ignore_index= True)
+        raw.dropna(subset=["Value"],inplace=True,  ignore_index=True)
 
         # Some time series have duplicate records, lets get rid of them
         raw = raw[~raw.duplicated()].reset_index(drop=True)
@@ -111,7 +93,7 @@ for path in full_path:
         if raw.empty:
             data_lost_a = data_lost_a + [raw]
             continue
-        elif len(raw)<2: # does not work if empty, so there has to be a pre-check if it is empty
+        elif len(raw) < 2:  # does not work if empty, so there has to be a pre-check if it is empty
             data_lost_a = data_lost_a + [raw]
             continue
 

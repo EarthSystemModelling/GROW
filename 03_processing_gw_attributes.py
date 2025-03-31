@@ -1,28 +1,17 @@
 ### Takes all well attributes tables from every country and merges it in one + attributes preprocessing
 
-## Configuration
-config = {
-    "basepath" : "/mnt/storage/grow/Groundwater/",
-    "wells": "Well_And_Monitoring_Data",
-    "timeseries_att": "Wells_timeseries/wells_timeseries_attributes_Ricarda.txt",
-    "timeseries" : "Wells_timeseries/wells_timeseries_Ricarda.txt",
-    "output": {"name": "_Ricarda",
-               "all":"Wells_attributes/wells_attributes_all.csv",
-               "all_dups": "Wells_attributes/wells_attributes_all_dups.txt",
-               "filtered": "Wells_attributes/wells_attributes",
-               "points": "Other_shapes/wells_points",
-               "drops": "Statistics/wells_attributes_drops",
-               "new_ts": "Wells_timeseries/wells_timeseries_final",
-               "coor": "Wells_attributes/wells_wrong_coordinates",
-               "id": "Wells_attributes/wells_dup_id",
-               "merge": "Wells_attributes/wells_pulling_empty",
-               "duploc": "Wells_attributes/wells_duplicate_loc_time"}
-}
 
+import pickle
 import os
 import time
 import pandas as pd
 import geopandas as gpd
+
+# Configuration
+with open('config.pkl', 'rb') as f:
+    all_configs = pickle.load(f)
+
+config = all_configs["config_03"]
 
 ## Merge all attributes together
 

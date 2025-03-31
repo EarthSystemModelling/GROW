@@ -1,49 +1,9 @@
 ### Merge all static and transient variables to groundwater data
 
-'''In this scripts...'''
+"""In this script..."""
 
-config = {
-    "basepath" : "/mnt/storage/grow/",
-    "wells" : "Groundwater/Wells_attributes/wells_attributes_Ricarda.txt",
-    "timeseries": "Groundwater/Wells_timeseries/wells_timeseries_final_Ricarda.txt",
-    "factors": {"dem": "Topography/MERIT_DEM/MERIT/MERIT_DEM.tif",
-                "slope": "Topography/Slope_MERIT_DEM/dtm_slope_merit.dem_m_250m_s0..0cm_2018_v1.0.tif",
-                "glim":{"data":'Soils_Geology/GLiM/glim_wgs84_0point5deg.txt.asc',"codes":"Soils_Geology/GLiM/Classnames.txt"},
-                "glymps":"Soils_Geology/GLYHMPS/GLHYMPS.shp",
-                "whymap": "Soils_Geology/WHYMAP/WHYMAP_WOKAM/shp/whymap_karst__v1_poly.shp",
-                "ggde": {"data":"Vegetation/GGDE/Huggins/gde-map.tif","codes":"Vegetation/GGDE/Huggins/GGDE_names.txt"},
-                "basins": "HydroAtlas/BasinATLAS_v10_shp/BasinATLAS_v10_lev09.shp",
-                "rivers": "HydroAtlas/HydroRIVERS_v10_shp/HydroRIVERS_v10.shp",
-                "drain_den": "HydroAtlas/Drainage_density.shp",
-                "mswep": "Climate/Precipitation/MSWEP/Selection",
-                "gpcc": "Climate/Precipitation/GPCC/",
-                "gleam": "Climate/GLEAM/daily_4_1a",
-                "hydrobelts": {"data":"Climate/Hydroregions/meybeck_et_al_2013_hydrobelts_shp/meybeck_et_al_2013_hydrobelts.shp", "codes":"Climate/Hydroregions/hydrobelts_codes_reduced.txt"},
-                "gk": {"data": "Climate/Climate_zones/CHELSA_kg0_1981-2010_V.2.1.tif", "codes": "Climate/Climate_zones/kg0_names.txt"},
-                "abstract_ind": "Humankind/Abstraction/ISIMIP_industrial",
-                "abstract_dom": "Humankind/Abstraction/ISIMIP_domestic",
-                "ndvi": "Vegetation/NDVI/access",
-                "temperature": "Climate/ERA5-Land_daily/Temperature",
-                "snow_depth": "Climate/ERA5-Land_daily/Snow",
-                "LAI_low" :"Climate/ERA5-Land_daily/LAI_low",
-                "LAI_high" :"Climate/ERA5-Land_daily/LAI_high",
-                "dist_streams": "Surface_Waters/Distance_perennial_streams/L01_m.tiff",
-                "gw_scapes": "Humankind/Groundwaterscapes/groundwaterscapes.tif",
-                "lu_totals": "Humankind/Land_use/totals",
-                "lu_urban": "Humankind/Land_use/urban",
-                "soil_texture": {"data":"Soils_Geology/HiHydroKlass/STC","codes":"Soils_Geology/HiHydroKlass/STC/stc_codes.txt"},
-                "soil_kat": "Soils_Geology/HiHydroKlass/Ksat"},
-    "output": "Groundwater/GROW_merge_Ricarda/",
-    "output_tables": {"att":"final_grow/grow_attributes_Ricarda.txt", "ts": "final_grow/grow_timeseries_Ricarda.txt"},
-    "modules": {"dem":True,"slope":True,"glim":True,"soil_text":True,"soil_kat":True,
-                "dist_streams":True,"gk":True,"glymps":True,"aquifer":True,"soil":False,
-                "lu":True,"mswep":True,"gpcc":True,"ggde":True,"gw_scapes":True,
-                "gleam":True,"dd":True,"dd_calc_map":False,
-                "abstract":True,"ndvi":True,"era5":True,"hydrobelts":True,
-                "static":False, "timeseries":True, "joinall":False},
-    "cores_num":10
-}
 
+import pickle
 import os # does not need to be installed
 import pandas as pd
 import geopandas as gpd
@@ -57,6 +17,12 @@ from func_merge_earth_system_variables import get_paths
 from func_merge_earth_system_variables import calc_dd
 
 warnings.filterwarnings("ignore")
+
+# Configuration
+with open('config.pkl', 'rb') as f:
+    all_configs = pickle.load(f)
+
+config = all_configs["config_04"]
 
 ## Earth system attributes: static
 
