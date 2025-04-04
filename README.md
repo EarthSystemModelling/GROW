@@ -6,7 +6,7 @@
 <img src="2025_GROW_Blau_Web_150DPI.png" width="200" /> 
 </p>
 <p align="center">
-<em>GROW logo: Made by Malaika Mack (http://vollblutkuenstler.de)</em>
+<em>GROW logo: Made by Malaika Mack / CC BY 4.0 (http://vollblutkuenstler.de)</em>
 
 <p align="center">GROW (global integrated GROundWater package) is a global, analysis-ready, quality-controlled dataset that combines grounwater depth and level time series from around the world with associated Earth system
 variables. The dataset contains > 180,000 time series from 41 countries in a daily, monthly, or yearly temporal 

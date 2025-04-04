@@ -1,22 +1,28 @@
-## Takes all well attributes excel files ("wells.xlsx" and "drilling_and_construction.xlsx") from every country and merges the individual sheets it in one containing every well
+## 00_check_metadata
 
-''' @ me: Add description of whole script'''
+'''In the original groundwater data, the attributes per time series are stored in 2 excel files with a total of 7 excel sheets.
+In this script, the number of wells that contain information (not NA) per sheet is printed. Based on this, we decided whether
+to add the sheet to GROW's attribute table or not.'''
 
-# Configuration
+# Configuration: Path names, output names and other settings are defined here.
 config = {
-    "basepath" : "/mnt/storage/grow/Groundwater/", # path to directory in which the folder with IGRACs groundwater data is located
+    "basepath" : "/mnt/storage/grow/Groundwater/", # directory in which groundwater data and all groundwater related outputs of GROW are located
     "wells": "Well_And_Monitoring_Data", # folder with IGRACs groundwater data
 }
 
 # Import packages
-import os
-import pandas as pd
+import os # internal package
+import pandas as pd # imported version: 2.2.3
 
+# Derive well attributes per sheet
 
-# Derive well attributes
+'''In the following, all excel files containing well attributes are sourced and merged into a table per excel sheet.
+That makes one large tabe with each well per sheet. Afterwards the lengths of the rows which contain other information than the
+wells ID are counted and printed.'''
 
-folders = os.listdir(config["basepath"] + config["wells"])
+folders = os.listdir(config["basepath"] + config["wells"]) # directory for each country
 
+# Creating empty lists per excel sheet
 hydrogeo = []
 management = []
 construction = []
@@ -24,6 +30,7 @@ water_strike = []
 log = []
 structure = []
 
+# loop over every country folder
 for fold in folders:
     file = config["basepath"] + config["wells"] + "/" + fold + "/" + "wells.xlsx"
 

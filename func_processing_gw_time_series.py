@@ -1,15 +1,20 @@
+## func_processing_gw_time_series
+
+'''This file contains all functions that are used in "01_processing_gw_time_series.py".'''
+
+# import packages
 import pandas as pd
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
 from scipy.stats import spearmanr
 from datetime import datetime
-import calendar
 from scipy import interpolate
 import operator
 import pymannkendall as mk
 
 
 ## extract longest sequence
+
 def extract_seq(df,series,datatype,relate,threshold,append=False,m=0):
     rel_ops = {
         '>': operator.gt,
@@ -31,7 +36,7 @@ def extract_seq(df,series,datatype,relate,threshold,append=False,m=0):
 
 ## get_max_dist: Method and script adapted from Gunnar Lischeid
 
-'''This function calculates the maximum allowed gap between time steps'''
+'''This function calculates the maximum allowed gap between time steps based on autocorrelation'''
 
 def get_max_dist(df,threshold, pairs, pvalue):
 # check if aggregation is allowed
@@ -87,46 +92,21 @@ def get_max_dist(df,threshold, pairs, pvalue):
 
 ## trim_max_dist
 
-'''Checks for maximum allowed gap length'''
+'''In case the allowed distance after the autocorrelation test is larger than the threshold, it is set to
+be the threshold.'''
 
 def trim_max_dist(max_dist,threshold):
     if max_dist > threshold:
         max_dist = threshold
     return(max_dist)
 
-## check_edges
-
-'''This functions checks if the first and last year/month can be aggregated with the data, if the distance to the first or last day is too large, the year or month is
-dropped'''
-
-def check_edges(df, max_dist):
-    # In case of year
-    if df.loc[0, "interval"] == "YS":
-        start = (df["Date and Time"][len(df) - 1] - datetime(df.loc[len(df) - 1, "year"], 1, 1)).total_seconds()  # seconds between first day of year and first Date in data of that year
-        end = (datetime(df.loc[0, "year"], 12, 31) - df["Date and Time"][0]).total_seconds()  # seconds between last Date in data and last possible day in that year
-        if start > max_dist:
-            df = df[df["year"] != df.loc[len(df) - 1, "year"]]  # when distance in first year too big, drop that year
-            if df.empty:
-                return df
-        if end > max_dist:
-            df = df[df["year"] != df.loc[0, "year"]]
-    # in case of month
-    elif df.loc[0, "interval"] == "MS":
-        lastday = calendar.monthrange(df.loc[0, "year"], df["Date and Time"].dt.month[0])
-        start = (df["Date and Time"][len(df) - 1] - datetime(df.loc[len(df) - 1, "year"], df["Date and Time"].dt.month[len(df) - 1], 1)).total_seconds()  # seconds between first day of year and first Date in data of that year
-        end = (datetime(df.loc[0, "year"], df["Date and Time"].dt.month[0], lastday[1]) - df["Date and Time"][0]).total_seconds()  # seconds between last Date in data and last possible day in that year
-        if start > max_dist:
-            df = df[df["month"] != df.loc[len(df) - 1, "month"]]  # when distance in first year too big, drop that year
-            if df.empty:
-                return df
-        if end > max_dist:
-            df = df[df["month"] != df.loc[0, "month"]]
-    return (df)
-
 ## fill_gaps
+
+'''Gaps are linearly filled'''
 
 def fill_gaps(df):
     dummy = df.copy()
+    # construct time series with no gaps
     ts = pd.date_range(dummy.loc[0, 'date'], dummy.loc[len(dummy) - 1, 'date'],freq=dummy.interval[0])
     ts_int = (ts - datetime(1800, 1, 1)).total_seconds()
     dummy["dateint"] = dummy["date"].apply(lambda x: ((x - datetime(1800, 1, 1)).total_seconds()))
@@ -145,6 +125,8 @@ def fill_gaps(df):
     return(raw3)
 
 ## calc_trend
+
+'''The Mann-Kendall test is utilized. Trend direction and Sen's slope are calculated and returned.'''
 
 def calc_trend(df,pre=False):
     if pre:

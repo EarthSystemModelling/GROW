@@ -1,13 +1,22 @@
+## func_merge_earth_system_variables
 
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
-import pandas as pd
-import os
-import xarray as xr
-import geopandas as gpd
+'''This file contains all functions that are used in "03_merge_earth_system_variables.py".'''
+
+# import packages
+from datetime import datetime # internal package
+from dateutil.relativedelta import relativedelta # internal package
+import pandas as pd # imported version: 2.2.3
+import os # internal package
+import xarray as xr # imported version: 2025.3.0
+import geopandas as gpd # imported version: 1.0.1
 
 ## get_paths
-'''Collects paths with certain pattern in folders and subfolders.'''
+'''Derives file paths with certain string pattern in folders and subfolders.
+
+path: folder in which is searched for
+pattern: string pattern
+pattern2: second string pattern can be given if full=True
+full: pattern and pattern2 need to occur in file name'''
 
 def get_paths(path,pattern,pattern2=None,full=False):
     txt_files = []
@@ -22,6 +31,10 @@ def get_paths(path,pattern,pattern2=None,full=False):
     return(txt_files)
 
 ## Calculate Drainage Density Map
+'''Calculate global drainage density map with HydroBASINS and HydroRIVERS
+
+config: configuration dictionary'''
+
 def calc_dd(config):
     # Calculate drainage density (length of rivers/ area of basin) with Hydrobasins and Hydrorivers
     basins = gpd.read_file(config["basepath"] + config["factors"]["basins"])
@@ -45,7 +58,45 @@ def calc_dd(config):
     dd.drop("area", axis=1, inplace=True)
     dd.to_file(config["basepath"] + config["factors"]["drain_den"])
 
-## merge_raster_transient
+# merge_raster_static
+''''''
+
+def merge_raster_static(df,rasterfile,col_name = None,glim=False, transform = False):
+
+    raster = xr.open_dataset(rasterfile, engine="rasterio")
+
+    # just for glim (15 means NAN) so that it is interpolated later
+    if glim:
+        raster = raster.where(raster['band_data'] != 15)
+
+    # Transform coordinate system if needed
+    if transform:
+        raster = raster.rio.reproject("EPSG:4326")
+
+    def extract_well_static(row,values):
+        extract = raster.sel({"y": row["latitude"], "x": row["longitude"]}, method="nearest")
+        values.append(pd.Series(extract["band_data"].values)[0])
+
+    values=[]
+    df.apply(lambda row: extract_well_static(row,values), axis=1)
+    df[col_name]= pd.Series(values)
+
+## merge_vector_point
+
+def merge_vector_point(vector,df,columns,int=False):
+    gdf = gpd.GeoDataFrame(df, geometry= gpd.points_from_xy(df.longitude, df.latitude), crs="EPSG:4326")
+    if vector.crs != gdf.crs:
+       vector.to_crs(gdf.crs,inplace=True)
+    if int:
+        joined_gdf = gpd.sjoin_nearest(gdf, vector, how="left") # nearest to avoid Nan
+    else:
+        joined_gdf = gpd.sjoin(gdf, vector, how="left")
+    column = list(df.columns) + columns
+    joined_gdf = joined_gdf[column]
+    return(pd.DataFrame(joined_gdf))
+
+
+## extract_val
 
 '''This function takes a raster(-stack) and a dataframe with coordinates and returns a series or
 list of series with the extracted values per coordinate pair.'''
@@ -72,6 +123,11 @@ def extract_val(config,row,raster,bandname,latname,lonname,col_name,ts):
     else:
         # export row to file
         ts_df.to_csv(config["basepath"] + config["output"] + col_name + "_Extraction.txt", sep=";", mode="a", index=False,header=False)
+
+## merge_raster_transient
+
+'''This function takes a raster(-stack) and a dataframe with coordinates and returns a series or
+list of series with the extracted values per coordinate pair.'''
 
 def merge_raster_transient(df,rasterpath,config, patt=".nc",patt2= None,ful = False,bandname= "band_data",latname="lat",lonname="lon",col_name = None, ndvi = False, transform = False, era5 = False, isimip = False):
 
@@ -107,40 +163,6 @@ def merge_raster_transient(df,rasterpath,config, patt=".nc",patt2= None,ful = Fa
             raster_nc = raster_nc.rio.reproject("EPSG:4326")
 
         df.apply(lambda row: extract_val(config,row,raster_nc,bandname,latname,lonname,col_name,ts), axis=1)
-
-def merge_raster_static(df,rasterfile,col_name = None,glim=False, transform = False):
-
-    raster = xr.open_dataset(rasterfile, engine="rasterio")
-
-    # just for glim (15 means NAN) so that it is interpolated later
-    if glim:
-        raster = raster.where(raster['band_data'] != 15)
-
-    # Transform coordinate system if needed
-    if transform:
-        raster = raster.rio.reproject("EPSG:4326")
-
-    def extract_well_static(row,values):
-        extract = raster.sel({"y": row["latitude"], "x": row["longitude"]}, method="nearest")
-        values.append(pd.Series(extract["band_data"].values)[0])
-
-    values=[]
-    df.apply(lambda row: extract_well_static(row,values), axis=1)
-    df[col_name]= pd.Series(values)
-
-## merge_vector_point
-
-def merge_vector_point(vector,df,columns,int=False):
-    gdf = gpd.GeoDataFrame(df, geometry= gpd.points_from_xy(df.longitude, df.latitude), crs="EPSG:4326")
-    if vector.crs != gdf.crs:
-       vector.to_crs(gdf.crs,inplace=True)
-    if int:
-        joined_gdf = gpd.sjoin_nearest(gdf, vector, how="left") # nearest to avoid Nan
-    else:
-        joined_gdf = gpd.sjoin(gdf, vector, how="left")
-    column = list(df.columns) + columns
-    joined_gdf = joined_gdf[column]
-    return(pd.DataFrame(joined_gdf))
 
 ## Aggregate and merge
 
