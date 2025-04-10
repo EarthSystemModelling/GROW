@@ -8,7 +8,7 @@ import pandas as pd # imported version: 2.2.3
 
 # load GROW tables
 attributes = pd.read_csv("/mnt/storage/grow/final_grow/grow_attributes.csv", sep=";")
-timeseries = pd.read_parquet("/mnt/storage/grow/final_grow/grow_timeseries_V05.parquet")
+timeseries = pd.read_parquet("/mnt/storage/grow/final_grow/grow_timeseries.parquet")
 
 # Subset attribute table
 # trend_direction is "decreasing"
