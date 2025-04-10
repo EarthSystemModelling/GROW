@@ -8,7 +8,7 @@ import pandas as pd # imported version: 2.2.3
 
 # load GROW tables
 attributes = pd.read_csv("/mnt/storage/grow/final_grow/grow_attributes.csv", sep=";")
-timeseries = pd.read_csv("/mnt/storage/grow/final_grow/grow_timeseries_V05.txt", sep=";")
+timeseries = pd.read_parquet("/mnt/storage/grow/final_grow/grow_timeseries_V05.parquet")
 
 # Subset attribute table
 # trend_direction is "decreasing"
@@ -20,16 +20,18 @@ attr_decreasing = attributes[(attributes.trend_direction=="decreasing") & (attri
 ts_decreasing = timeseries[timeseries.GROW_ID.isin(attr_decreasing.GROW_ID)]
 
 # Drop filter columns that are not needed
-ts_decreasing.drop(columns=["date","year","aggregated_from_n_values","plateaus"], inplace=True)
+ts_decreasing.drop(columns=["date","country","interval","year","aggregated_from_n_values","plateaus"], inplace=True)
 
 # Aggregate time series to a monthly resolution
 ts_decreasing_monthly = ts_decreasing.groupby(["GROW_ID","month"],as_index=False).mean() # Aggregate all numeric variables per ID and month
 '''All quantity units are given in mm/year. The unit can be adjusted to the daily or monthly scale by the division of 365 or 12.'''
-ts_decreasing_monthly.iloc[:,5:10] = ts_decreasing_monthly.iloc[:,5:10].apply(lambda x: x/12, axis=1) # adjust quantity units from mm/year to mm/month by dividing with 12
+ts_decreasing_monthly.iloc[:,8:12] = ts_decreasing_monthly.iloc[:,8:12].apply(lambda x: x/12, axis=1) # adjust quantity units from mm/year to mm/month by dividing with 12
 
 '''Now, you are ready to start your analysis :)'''
 
 print(len(attr_decreasing[attr_decreasing.main_landuse=="cropland_irrigated"])/len(attr_decreasing))
 print(len(attributes[attributes.main_landuse=="cropland_irrigated"])/len(attributes))
+
+breakpoint()
 
 
