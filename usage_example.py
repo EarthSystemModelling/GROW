@@ -1,37 +1,29 @@
 ### usage_example
 
-'''This is an example showing how GROW can be easily subset for specific needs.
-In this example, we might want to investigate decreasing groundwater tables.'''
+'''This is an example showing how GROW can be easily subset for specific needs. In this example, we might want to investigate
+the seasonal pattern of groundwater observations in Brazil. For that, we need to 1.) extract monthly groundwater time series from Brazil,
+2.) aggregate the time series and 3.) adjust the units.'''
 
-# import packages
-import pandas as pd # imported version: 2.2.3
+import pandas as pd
 
 # load GROW tables
-attributes = pd.read_csv("/mnt/storage/grow/final_grow/grow_attributes.csv", sep=";")
-timeseries = pd.read_parquet("/mnt/storage/grow/final_grow/grow_timeseries.parquet")
+attributes = pd.read_parquet("/mnt/storage/grow/final_grow/grow_attributes.parquet") # table in csv-format
+timeseries = pd.read_parquet("/mnt/storage/grow/final_grow/grow_timeseries.parquet") # table in parquet-format
 
-# Subset attribute table
-# trend_direction is "decreasing"
-# at least 20 years long
-# monthly resolution (daily or monthly possible, daily is later aggregated)
-attr_decreasing = attributes[(attributes.trend_direction=="decreasing") & (attributes.length_years>=20) & (attributes.interval!="YS")]
+# 1.) subset attribute and time series table
+# only time series in Brazil ("BRA")
+# only time series which are monthly or daily (not yearly; YS)
+attr_bra_monthly = attributes[(attributes.country=="BRA") & (attributes.interval!="YS")] # subset attribute table by data flag columns
+ts_bra = timeseries[timeseries.GROW_ID.isin(attr_bra_monthly.GROW_ID)] # subset time series table BY GROW_ID
 
-# Subset time series table by GROW_ID
-ts_decreasing = timeseries[timeseries.GROW_ID.isin(attr_decreasing.GROW_ID)]
+# 2.) aggregate time series to a monthly resolution
+ts_bra.drop(columns=["date","interval","year","aggregated_from_n_values","plateaus"], inplace=True) # drop filter columns that are not needed
+ts_bra_monthly = ts_bra.groupby(["GROW_ID","month"],as_index=False).mean() # aggregate all numeric variables per ID and month
 
-# Drop filter columns that are not needed
-ts_decreasing.drop(columns=["date","country","interval","year","aggregated_from_n_values","plateaus"], inplace=True)
-
-# Aggregate time series to a monthly resolution
-ts_decreasing_monthly = ts_decreasing.groupby(["GROW_ID","month"],as_index=False).mean() # Aggregate all numeric variables per ID and month
-'''All quantity units are given in mm/year. The unit can be adjusted to the daily or monthly scale by the division of 365 or 12.'''
-ts_decreasing_monthly.iloc[:,8:12] = ts_decreasing_monthly.iloc[:,8:12].apply(lambda x: x/12, axis=1) # adjust quantity units from mm/year to mm/month by dividing with 12
+# 3.) adjust units
+'''All quantity units are given in mm/year. The unit can be adjusted to the daily or monthly scale by the division of 365 or 12. 
+All variables with quantity units are arranged in a row (here column 8 to 13)'''
+ts_bra_monthly.iloc[:,8:14] = ts_bra_monthly.iloc[:,8:14].apply(lambda x: x/12, axis=1) # adjust quantity units from mm/year to mm/month by dividing with 12
+ts_bra_monthly["month"] = pd.to_datetime(ts_bra_monthly["month"],format="%Y-%m") # convert month-column to datetime
 
 '''Now, you are ready to start your analysis :)'''
-
-print(len(attr_decreasing[attr_decreasing.main_landuse=="cropland_irrigated"])/len(attr_decreasing))
-print(len(attributes[attributes.main_landuse=="cropland_irrigated"])/len(attributes))
-
-breakpoint()
-
-
