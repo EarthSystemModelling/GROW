@@ -356,3 +356,4 @@ pd.concat(outliers_parameter).to_csv(config["basepath"]+config["output"]["par"] 
 
 # Print duration of scripts
 np.savetxt(config["basepath"]+config["output"]["duration"] + config["output"]["name"] + ".txt", np.array([str(datetime.now() - startTime)]), fmt='%s') # print time it takes for the whole script to run through
+
