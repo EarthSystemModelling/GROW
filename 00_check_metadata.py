@@ -11,7 +11,7 @@ config = {
 }
 
 # Import packages
-import os # internal package
+import os # built-in package
 import pandas as pd # imported version: 2.2.3
 
 # Derive well attributes per sheet
