@@ -4,10 +4,10 @@
 the seasonal pattern of groundwater observations in Brazil. For that, we need to 1.) extract monthly groundwater time series from Brazil,
 2.) aggregate the time series and 3.) adjust the units.'''
 
-import pandas as pd
+import pandas as pd # imported version: 2.2.3
 
 # load GROW tables
-attributes = pd.read_parquet("/mnt/storage/grow/final_grow/grow_attributes.parquet") # table in csv-format
+attributes = pd.read_csv("/mnt/storage/grow/final_grow/grow_attributes.csv", sep=";") # table in csv-format
 timeseries = pd.read_parquet("/mnt/storage/grow/final_grow/grow_timeseries.parquet") # table in parquet-format
 
 # 1.) subset attribute and time series table
@@ -27,3 +27,6 @@ ts_bra_monthly.iloc[:,8:14] = ts_bra_monthly.iloc[:,8:14].apply(lambda x: x/12, 
 ts_bra_monthly["month"] = pd.to_datetime(ts_bra_monthly["month"],format="%Y-%m") # convert month-column to datetime
 
 '''Now, you are ready to start your analysis :)'''
+print()
+
+
