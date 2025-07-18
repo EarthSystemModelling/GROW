@@ -1,16 +1,30 @@
-import pandas as pd
-import numpy as np
-from scipy.spatial.distance import pdist, squareform
-from scipy.stats import spearmanr
-from datetime import datetime
-import calendar
-from scipy import interpolate
-import operator
-import pymannkendall as mk
+## func_processing_gw_time_series
+
+'''This file contains all functions that are used in "01_processing_gw_time_series.py".'''
+
+# import packages
+import pandas as pd # imported version: 2.2.3
+import numpy as np # imported version: 2.2.4
+from scipy.spatial.distance import pdist, squareform # imported version: 1.15.2
+from scipy.stats import spearmanr # imported version: 1.15.2
+from datetime import datetime # internal package
+from scipy import interpolate # imported version: 1.15.2
+import operator # internal package
+import pymannkendall as mk # imported version: 1.4.3
 
 
 ## extract longest sequence
-def extract_seq(df,series,datatype,relate,threshold,append=False,m=0):
+'''Extracts longest continuous sequence of time series in which the time step intervals are below or
+equal to a certain threshold.
+
+df: dataframe with groundwater information
+series: series with interval length between every time step in days
+datatype: data type to which the series is transformed
+relate: relative operator to be used for the comparison with the threshold
+threshold: threshold value
+append: if "True", the next time step of the longest continuous sequence is added to the sequence'''
+
+def extract_seq(df,series,datatype,relate,threshold,append=False):
     rel_ops = {
         '>': operator.gt,
         '<': operator.lt,
@@ -26,12 +40,20 @@ def extract_seq(df,series,datatype,relate,threshold,append=False,m=0):
     else:
         if append:
             longest_seq = np.append(longest_seq, longest_seq[-1] + 1)  # to add last time step
-        res = df.iloc[(longest_seq.min() + m):(longest_seq.max() + 1), :].reset_index(drop=True) # select longest continous sequence and reset index
+        res = df.iloc[(longest_seq.min()):(longest_seq.max() + 1), :].reset_index(drop=True) # select longest continous sequence and reset index
         return(res)
 
 ## get_max_dist: Method and script adapted from Gunnar Lischeid
+'''This function calculates the maximum allowed gap length between time steps 
+based on autocorrelation. The allowed gap length is as long as the time series 
+autocorrelates with a defined correlation coefficient threshold (Spearman r).
+The maximum allowed gap length and a flag if the time series autocorrelates is returned.
 
-'''This function calculates the maximum allowed gap between time steps'''
+df: dataframe with groundwater information
+threshold: minimum correlation coefficient to label time series as autocorrelated
+pairs: minimum number of data pairs (overlap) to perform correlation
+pvalue: if True, significance of test is considered
+'''
 
 def get_max_dist(df,threshold, pairs, pvalue):
 # check if aggregation is allowed
@@ -51,7 +73,6 @@ def get_max_dist(df,threshold, pairs, pvalue):
     acf_table = pd.DataFrame(columns=['From', 'To', 'Autocorrelation',"p-value", 'Number_of_instances'], index=range(len(classes)-1))
     acf_table['From'] = classes[:-1]
     acf_table['To'] = classes[1:]
-
 
     # Loop through classes
     for i in range(len(classes) - 1):
@@ -86,47 +107,28 @@ def get_max_dist(df,threshold, pairs, pvalue):
 
 
 ## trim_max_dist
+'''In case the allowed maximum gap length after the autocorrelation test is larger than the 
+general gap length threshold, it is set to the threshold.
 
-'''Checks for maximum allowed gap length'''
+max_dist: maximum allowed gap length
+threshold: general threshold gap length that bases on resolution and/or length of the time series
+'''
 
 def trim_max_dist(max_dist,threshold):
     if max_dist > threshold:
         max_dist = threshold
     return(max_dist)
 
-## check_edges
-
-'''This functions checks if the first and last year/month can be aggregated with the data, if the distance to the first or last day is too large, the year or month is
-dropped'''
-
-def check_edges(df, max_dist):
-    # In case of year
-    if df.loc[0, "interval"] == "YS":
-        start = (df["Date and Time"][len(df) - 1] - datetime(df.loc[len(df) - 1, "year"], 1, 1)).total_seconds()  # seconds between first day of year and first Date in data of that year
-        end = (datetime(df.loc[0, "year"], 12, 31) - df["Date and Time"][0]).total_seconds()  # seconds between last Date in data and last possible day in that year
-        if start > max_dist:
-            df = df[df["year"] != df.loc[len(df) - 1, "year"]]  # when distance in first year too big, drop that year
-            if df.empty:
-                return df
-        if end > max_dist:
-            df = df[df["year"] != df.loc[0, "year"]]
-    # in case of month
-    elif df.loc[0, "interval"] == "MS":
-        lastday = calendar.monthrange(df.loc[0, "year"], df["Date and Time"].dt.month[0])
-        start = (df["Date and Time"][len(df) - 1] - datetime(df.loc[len(df) - 1, "year"], df["Date and Time"].dt.month[len(df) - 1], 1)).total_seconds()  # seconds between first day of year and first Date in data of that year
-        end = (datetime(df.loc[0, "year"], df["Date and Time"].dt.month[0], lastday[1]) - df["Date and Time"][0]).total_seconds()  # seconds between last Date in data and last possible day in that year
-        if start > max_dist:
-            df = df[df["month"] != df.loc[len(df) - 1, "month"]]  # when distance in first year too big, drop that year
-            if df.empty:
-                return df
-        if end > max_dist:
-            df = df[df["month"] != df.loc[0, "month"]]
-    return (df)
-
 ## fill_gaps
+'''Gaps in the groundwater time series are linearly interpolated. 
+The dataframe with an additional column (filled time series) is returned.
+
+df: dataframe with groundwater information
+'''
 
 def fill_gaps(df):
     dummy = df.copy()
+    # construct time series with no gaps
     ts = pd.date_range(dummy.loc[0, 'date'], dummy.loc[len(dummy) - 1, 'date'],freq=dummy.interval[0])
     ts_int = (ts - datetime(1800, 1, 1)).total_seconds()
     dummy["dateint"] = dummy["date"].apply(lambda x: ((x - datetime(1800, 1, 1)).total_seconds()))
@@ -145,6 +147,13 @@ def fill_gaps(df):
     return(raw3)
 
 ## calc_trend
+'''For the groundwater time series, the trend direction and Sen's slope are calculated and returned. 
+The Mann-Kendall test is utilized. 
+
+df: dataframe with groundwater information
+pre: if True, groundwater time series autocorrelates, and the modified Mann Kendall test
+by Hamed and Rao (1998) is used for the trend analysis
+'''
 
 def calc_trend(df,pre=False):
     if pre:
@@ -156,21 +165,23 @@ def calc_trend(df,pre=False):
         res = mk.original_test(df.groundwater)
 
     trend = res.trend
-    if df.parameter[0] == "Water depth [from the ground surface]":
+    slope = res.slope
+
+    # when there is no significant trend, the calculated slope is ignored; could be quite high but insignificant because of too less data points
+    if trend == "no trend":
+        return ("no trend", None)
+
+    if df.parameter[0] != "Water level elevation a.m.s.l.":
+        slope = slope * (-1)  # switch sign of slope
         if trend == "decreasing":
             trend = "increasing"
         elif trend == "increasing":
             trend = "decreasing"
 
-    # when there is no significant trend, the calculated slope is ignored; could be quite high but insignificant because of too less data points
-    if trend == "no trend":
-        return("no trend",None)
-    else:
-        slope = res.slope
+    if np.unique(df.interval) == "d":
+        slope = slope * 365
+    elif np.unique(df.interval) == "MS":
+        slope = slope * 12
 
-    if np.unique(df.interval)=="d":
-        slope = slope*365
-    elif np.unique(df.interval)=="MS":
-        slope = slope*12
-    return(trend, slope)
+    return (trend, slope)
 

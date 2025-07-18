@@ -1,43 +1,50 @@
-## Read and process IGRAC's groundwater time series files
+## 01_processing_gw_time_series.py
 
-'''To do me: Short summary of script'''
+'''A single table containing all time series is created.
+Every time series of the original data is stored in an individual excel file. In this script, each time series file is consecutively
+read, processed, quality-checked, eventually discarded or appended to a single table.
+Data flags are generated and either added as column to the time series data or exported to a time series attributes table.
+Other than that, discarded time series are collected in extra tables and exported. Time series statistics are derived and exported.
+'''
 
-# Configuration
+# Configuration: Path names, output names and other settings are defined here.
 config = {
-    "basepath" : "/mnt/storage/grow/Groundwater/",
-    "wells": "Well_And_Monitoring_Data",
-    "country_name_pos": 55, # position of first country letter in file path to extract country information
-    "output": {"name":"_Ricarda",
-               "data":"Wells_timeseries/wells_timeseries",
-               "ts_attributes": "Wells_timeseries/wells_timeseries_attributes",
-               "max_dist": "Statistics/max_distance",
-               "lost_<2_records": "Wells_timeseries/lost_<2_records",
-               "lost_mul_par": "Wells_timeseries/lost_mul_par",
-               "lost_unrealistic_value": "Wells_timeseries/lost_unrealistic_value",
-               "lost_after_aggregation": "Wells_timeseries/lost_after_aggregation",
-               "lost_gap_length": "Wells_timeseries/lost_gap_length",
-               "lost_gap_amount": "Wells_timeseries/lost_gap_amount",
-               "plateau": "Wells_timeseries/wells_plateau",
-               "jumps": "Wells_timeseries/wells_jumps",
-               "depth_all":"Wells_timeseries/wells_depth_all_negative",
-               "depth_any":"Wells_timeseries/wells_depth_some_negative",
-               "par": "Wells_timeseries/wells_mul_par_all",
-               "lost_per": "Statistics/wells_timeseries_drops",
+    "basepath" : "/mnt/storage/grow/Groundwater/", # GROW project directory for groundwater data
+    "wells": "01_IGRAC_data_2024_06_x", # folder in which IGRAC's groundwater data is located
+    "country_name_pos": 54, # position of first country letter in file path to extract country information
+    # paths of exported output files
+    "output": {"name":"_V07", # name of version
+               "data":"02_Timeseries/wells_timeseries",
+               "ts_attributes": "02_Timeseries/wells_timeseries_attributes",
+               "max_dist": "02_Statistics/max_distance",
+               "lost_<2_records": "02_Timeseries/lost_<2_records",
+               "lost_mul_par": "02_Timeseries/lost_mul_par",
+               "lost_unrealistic_value": "02_Timeseries/lost_unrealistic_value",
+               "lost_after_aggregation": "02_Timeseries/lost_after_aggregation",
+               "lost_gap_length": "02_Timeseries/lost_gap_length",
+               "lost_gap_amount": "02_Timeseries/lost_gap_amount",
+               "plateau": "02_Timeseries/wells_plateau",
+               "jumps": "02_Timeseries/wells_jumps",
+               "depth_all":"02_Timeseries/wells_depth_all_negative",
+               "depth_any":"02_Timeseries/wells_depth_some_negative",
+               "par": "02_Timeseries/wells_mul_par_all",
+               "lost_per": "02_Statistics/wells_timeseries_drops",
                "duration": "GGMN_preprocessing_duration.txt"},
-    "small": True
+    "small": True # If True, only 1/5 of the data is processed to create a smaller test dataset
 }
 
-import os
-from datetime import datetime
-import pandas as pd
-import numpy as np
-import warnings
-from dateutil.relativedelta import relativedelta
-from func_processing_gw_time_series import get_max_dist
-from func_processing_gw_time_series import trim_max_dist
-from func_processing_gw_time_series import extract_seq
-from func_processing_gw_time_series import fill_gaps
-from func_processing_gw_time_series import calc_trend
+# Import packages
+import os # built-in package
+from datetime import datetime # internal package
+import pandas as pd # imported version: 2.2.3
+import numpy as np # imported version: 2.2.4
+import warnings # built-in package
+from dateutil.relativedelta import relativedelta # built-in package
+from func_processing_gw_time_series import get_max_dist # derives maximum allowed gap length
+from func_processing_gw_time_series import trim_max_dist # limits maximum allowed gap length to threshold
+from func_processing_gw_time_series import extract_seq # extracts longest sequence in which the gaps do not exceed the individual gap length threshold
+from func_processing_gw_time_series import fill_gaps # creates column where groundwater data is linearly gap-filled
+from func_processing_gw_time_series import calc_trend # calculates trend direction and slope
 
 warnings.filterwarnings("ignore")
 
@@ -139,13 +146,13 @@ for path in full_path:
 
         ## Unrealistic values in water table depth and level
         ### Remove negative groundwater depth or switch sign when all are negative (negative means above ground)
-        if raw.loc[0, "Parameter"] == "Water depth [from the ground surface]":
-            if (raw.Value <= 0).all():  # all records are negative
+        if raw.loc[0, "Parameter"] != "Water level elevation a.m.s.l.":
+            if (raw.Value < 0).all():  # all records are negative
                 outliers_depth_all = outliers_depth_all + [raw]
                 raw.Value = raw.Value * (-1)  # when all values are negative, we just need a sign switch
-            elif (raw.Value <= 0).any():  # only some records are negative
+            elif (raw.Value < 0).any():  # only some records are negative
                 outliers_depth_any = outliers_depth_any + [raw]
-                raw = raw.drop(raw[raw.Value <= 0].index).reset_index(drop=True) # they are dropped
+                raw = raw.drop(raw[raw.Value < 0].index).reset_index(drop=True) # they are dropped
         ### Remove groundwater level records that are -999 or -9999
         else:
             if ((raw.Value == -999).any()) | ((raw.Value == -9999).any()):
@@ -196,10 +203,6 @@ for path in full_path:
 
         ## Get max distance based on autocorrelation
         max_dist, bol = get_max_dist(raw2, 0.6, 30, False) # when they are time steps with exact same time, 0 is returned
-        #if max_dist == 0:
-            #print("Max_dist was 0")
-            #data_lost_e = data_lost_e + [raw]
-            #continue
 
         ## Check time series for maximum allowed gap
         yn = abs(relativedelta(raw2["date"].iloc[-1], raw2["date"].iloc[0]).years) + 1
@@ -308,11 +311,11 @@ for path in full_path:
 
         ## create attributes table
         attributes = pd.DataFrame({"ID": [raw5.loc[0, "ID"]], "country": [raw5.loc[0, "country"]],
-                      "interval": [raw5.loc[0, "interval"]], "firstdate": [raw5.loc[0, "date"]],
-                      "lastdate": [raw5.loc[len(raw5) - 1, "date"]], "length_years": [yn],
-                      "parameter": [raw5.loc[0, "parameter"]],"autocorrelation": bol, "aggregated_from_n_values_median": [raw5.aggregated_from_n_values.median()],
-                      "total_gap_fraction ": [gap_amount], "jumps": jumps, "plateaus": [plat],"trend_direction": [trend],
-                      "trend_slope_[m/year])": [slope],"groundwater_mean_[m]": [raw5.groundwater.mean()], "groundwater_median_[m]": [raw5.groundwater.median()]})
+                      "interval": [raw5.loc[0, "interval"]], "starting_date": [raw5.loc[0, "date"]],
+                      "ending_date": [raw5.loc[len(raw5) - 1, "date"]], "length_years": [yn],
+                      "reference_point": [raw5.loc[0, "parameter"]],"autocorrelation": bol, "aggregated_from_n_values_median": [raw5.aggregated_from_n_values.median()],
+                      "gap_fraction ": [gap_amount], "jumps": jumps, "plateaus": [plat],"trend_direction": [trend],
+                      "trend_slope_m_year-1)": [slope],"groundwater_mean_m": [raw5.groundwater.mean()], "groundwater_median_m": [raw5.groundwater.median()]})
         max_distance = pd.DataFrame({"ID": [raw5.loc[0, "ID"]], "country":  [raw5.loc[0, "country"]], "interval": [raw5.loc[0, "interval"]], "max_dist": [max_dist],
                         "max_filled_gap": [max_gap], "mean_filled_gap": [mean_gap], "gap_count": [gap_amount]})
 
