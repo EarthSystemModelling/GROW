@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="7e7c1e35-bec7-4800-af78-7f27bab9c640" name="Changes" comment="add logo" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="baethge" />
+      </list>
+    </option>
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;baethge&quot;
+  }
+}</component>
+  <component name="GithubDefaultAccount">
+    <option name="defaultAccountId" value="74ef846d-68f4-43a8-8b8d-54d0f1d648a8" />
+  </component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;git@github.com:EarthSystemModelling/GROW_V1.git&quot;,
+    &quot;accountId&quot;: &quot;74ef846d-68f4-43a8-8b8d-54d0f1d648a8&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="2urKmCYFinaYTqm91herJQYLV3E" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.00_check_metadata.executor": "Debug",
+    "Python.01_processing_gw_time_series.executor": "Debug",
+    "Python.02_processing_gw_attributes.executor": "Debug",
+    "Python.03_merge_earth_system_variables.executor": "Debug",
+    "Python.05_merge_earth_system_variables.executor": "Debug",
+    "Python.func_merge_earth_system_variables.executor": "Run",
+    "Python.test.executor": "Run",
+    "Python.usage_example.executor": "Debug",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "ignore.virus.scanning.warn.message": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-e768b9ed790e-JavaScript-PY-243.21565.199" />
+        <option value="bundled-python-sdk-cab1f2013843-4ae2d6a61b08-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-243.21565.199" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="SshConsoleOptionsProvider">
+    <option name="myEncoding" value="UTF-8" />
+    <option name="myConnectionType" value="NONE" />
+    <option name="myConnectionId" value="" />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="7e7c1e35-bec7-4800-af78-7f27bab9c640" name="Changes" comment="" />
+      <created>1743001410018</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1743001410018</updated>
+      <workItem from="1743001411088" duration="9897000" />
+      <workItem from="1743020020867" duration="9000" />
+      <workItem from="1743082024084" duration="3411000" />
+      <workItem from="1743086054737" duration="1162000" />
+      <workItem from="1743087250629" duration="2296000" />
+      <workItem from="1743119420699" duration="610000" />
+      <workItem from="1743155782364" duration="17000" />
+      <workItem from="1743688988720" duration="4205000" />
+      <workItem from="1743693386612" duration="670000" />
+      <workItem from="1743694697067" duration="1698000" />
+      <workItem from="1743711699621" duration="9250000" />
+      <workItem from="1743776878971" duration="5694000" />
+      <workItem from="1743800540165" duration="630000" />
+      <workItem from="1743809224895" duration="23000" />
+      <workItem from="1743969289985" duration="10548000" />
+      <workItem from="1744031288845" duration="4787000" />
+      <workItem from="1744039054784" duration="1201000" />
+      <workItem from="1744055402895" duration="45000" />
+      <workItem from="1744061396792" duration="2028000" />
+      <workItem from="1744227858683" duration="8721000" />
+      <workItem from="1744281340417" duration="7510000" />
+      <workItem from="1744361506547" duration="14000" />
+      <workItem from="1744625147186" duration="610000" />
+      <workItem from="1744641287271" duration="597000" />
+      <workItem from="1744707982628" duration="7000" />
+      <workItem from="1744800178447" duration="4509000" />
+      <workItem from="1744808920126" duration="604000" />
+      <workItem from="1744809538549" duration="836000" />
+      <workItem from="1744814131033" duration="859000" />
+      <workItem from="1745339347626" duration="18000" />
+      <workItem from="1745339498685" duration="3056000" />
+      <workItem from="1745355913913" duration="25000" />
+      <workItem from="1745400452230" duration="1457000" />
+      <workItem from="1745417605229" duration="42000" />
+      <workItem from="1747134383938" duration="630000" />
+      <workItem from="1747164580399" duration="627000" />
+      <workItem from="1747165633407" duration="15000" />
+      <workItem from="1748813437090" duration="2141000" />
+      <workItem from="1748886948778" duration="1923000" />
+      <workItem from="1751279722565" duration="1296000" />
+      <workItem from="1751646118192" duration="2830000" />
+      <workItem from="1751649022135" duration="767000" />
+      <workItem from="1751665561362" duration="99000" />
+      <workItem from="1751797068724" duration="16172000" />
+      <workItem from="1751818352314" duration="110000" />
+      <workItem from="1751904169892" duration="9000" />
+      <workItem from="1751904511345" duration="740000" />
+      <workItem from="1752059733222" duration="1409000" />
+      <workItem from="1752061172387" duration="1024000" />
+      <workItem from="1752246031054" duration="51000" />
+      <workItem from="1752248636023" duration="1207000" />
+      <workItem from="1752258662566" duration="13000" />
+      <workItem from="1752273887152" duration="1360000" />
+      <workItem from="1752485230896" duration="16000" />
+      <workItem from="1752492246746" duration="1493000" />
+      <workItem from="1752525977094" duration="77000" />
+      <workItem from="1752592773634" duration="1832000" />
+      <workItem from="1752656383302" duration="5000" />
+      <workItem from="1752850136739" duration="896000" />
+      <workItem from="1753096916321" duration="7000" />
+      <workItem from="1753304426277" duration="4212000" />
+      <workItem from="1753350172521" duration="7557000" />
+      <workItem from="1753362971674" duration="13774000" />
+      <workItem from="1753391298771" duration="3519000" />
+      <workItem from="1753446494435" duration="2360000" />
+      <workItem from="1753631912607" duration="2380000" />
+      <workItem from="1753698325539" duration="61000" />
+      <workItem from="1753790987451" duration="2025000" />
+      <workItem from="1753877802810" duration="2554000" />
+      <workItem from="1753951042799" duration="5880000" />
+    </task>
+    <task id="LOCAL-00001" summary="initial">
+      <option name="closed" value="true" />
+      <created>1743001446047</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1743001446047</updated>
+    </task>
+    <task id="LOCAL-00002" summary="initial">
+      <option name="closed" value="true" />
+      <created>1743001947664</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1743001947664</updated>
+    </task>
+    <task id="LOCAL-00003" summary="initial commit">
+      <option name="closed" value="true" />
+      <created>1743012183608</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1743012183608</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Initial commit">
+      <option name="closed" value="true" />
+      <created>1743083659386</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1743083659386</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Initial commit">
+      <option name="closed" value="true" />
+      <created>1743083777810</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1743083777810</updated>
+    </task>
+    <task id="LOCAL-00006" summary="test">
+      <option name="closed" value="true" />
+      <created>1743084021757</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1743084021757</updated>
+    </task>
+    <task id="LOCAL-00007" summary="test">
+      <option name="closed" value="true" />
+      <created>1752850543050</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1752850543050</updated>
+    </task>
+    <task id="LOCAL-00008" summary="test">
+      <option name="closed" value="true" />
+      <created>1753954193650</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1753954193650</updated>
+    </task>
+    <task id="LOCAL-00009" summary="add logo">
+      <option name="closed" value="true" />
+      <created>1753954261584</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1753954261584</updated>
+    </task>
+    <task id="LOCAL-00010" summary="add logo">
+      <option name="closed" value="true" />
+      <created>1753958214069</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1753958214069</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="initial" />
+    <MESSAGE value="initial commit" />
+    <MESSAGE value="Initial commit" />
+    <MESSAGE value="test" />
+    <MESSAGE value="add logo" />
+    <option name="LAST_COMMIT_MESSAGE" value="add logo" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/01_processing_gw_time_series.py</url>
+          <line>93</line>
+          <option name="timeStamp" value="18" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/GROW_V1_0$01_processing_gw_time_series.coverage" NAME="01_processing_gw_time_series Coverage Results" MODIFIED="1753632102604" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/GROW_V1_0$test.coverage" NAME="test Coverage Results" MODIFIED="1743001641830" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/GROW_V1_0$03_merge_earth_system_variables.coverage" NAME="03_merge_earth_system_variables Coverage Results" MODIFIED="1753879091872" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/GROW_V1_0$02_processing_gw_attributes.coverage" NAME="02_processing_gw_attributes Coverage Results" MODIFIED="1753952195486" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/GROW_V1_0$usage_example.coverage" NAME="usage_example Coverage Results" MODIFIED="1751646342436" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/GROW_V1_0$00_check_metadata.coverage" NAME="00_check_metadata Coverage Results" MODIFIED="1753306477667" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/GROW_V1_0$func_merge_earth_system_variables.coverage" NAME="func_merge_earth_system_variables Coverage Results" MODIFIED="1751805426049" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/GROW_V1_0$05_merge_earth_system_variables.coverage" NAME="05_merge_earth_system_variables Coverage Results" MODIFIED="1743010443104" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+  </component>
+</project>
