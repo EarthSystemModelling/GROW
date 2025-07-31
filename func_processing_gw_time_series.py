@@ -32,15 +32,15 @@ def extract_seq(df,series,datatype,relate,threshold,append=False):
         '<=': operator.le,
         '==': operator.eq,
         '!=': operator.ne}
-    sequence = np.where(rel_ops[relate](series.astype(datatype), threshold).tolist())[0]  ## get every index without na at value
-    longest_seq = max(np.split(sequence, np.where(np.diff(sequence) != 1)[0] + 1), key=len)  # find longest continous sequence in indexes
+    sequence = np.where(rel_ops[relate](series.astype(datatype), threshold).tolist())[0]  ## get index where the interval to the next time step is <= allowed distance
+    longest_seq = max(np.split(sequence, np.where(np.diff(sequence) != 1)[0] + 1), key=len)  # find longest continuous sequence in indexes
 
     if len(longest_seq) == 0:
         return(pd.DataFrame([]))
     else:
         if append:
-            longest_seq = np.append(longest_seq, longest_seq[-1] + 1)  # to add last time step
-        res = df.iloc[(longest_seq.min()):(longest_seq.max() + 1), :].reset_index(drop=True) # select longest continous sequence and reset index
+            longest_seq = np.append(longest_seq, longest_seq[-1] + 1)  # to add last record
+        res = df.iloc[(longest_seq.min()):(longest_seq.max() + 1), :].reset_index(drop=True) # select longest continuous sequence from time series and reset index
         return(res)
 
 ## get_max_dist: Method and script adapted from Gunnar Lischeid
@@ -129,18 +129,25 @@ df: dataframe with groundwater information
 def fill_gaps(df):
     dummy = df.copy()
     # construct time series with no gaps
-    ts = pd.date_range(dummy.loc[0, 'date'], dummy.loc[len(dummy) - 1, 'date'],freq=dummy.interval[0])
+    ts = pd.date_range(dummy.loc[0, 'date'], dummy.loc[len(dummy) - 1, 'date'],freq=dummy.interval[0]) # complete time series
+    # to interpolate the gaps we need a function between the groundwater values and the date, the date needs to be numeric for that purpose
     ts_int = (ts - datetime(1800, 1, 1)).total_seconds()
+    ts_df = pd.DataFrame({"time_int": ts_int, "date": ts})
+
+    # get interpolation function
     dummy["dateint"] = dummy["date"].apply(lambda x: ((x - datetime(1800, 1, 1)).total_seconds()))
     gw_func = interpolate.interp1d(dummy["dateint"], dummy["Value"])
 
-    ts_df = pd.DataFrame({"time_int": ts_int, "date": ts})
+    # merge complete time series with groundwater time series to get a complete date column
     raw3 = pd.merge(dummy, ts_df, "outer", left_on="dateint", right_on="time_int")
     raw3.reset_index(inplace=True,drop=True)
+
+    # use interpolation function to construct a complete groundwater time series
     raw3["groundwater_filled"] = gw_func(raw3["time_int"])
-    raw3["date_x"] = raw3["date_y"]
+    raw3["date_x"] = raw3["date_y"] # I actually want to have date_y as new complete datetime column but to avoid changing column order, I just overwrite the old datetime column
     raw3.drop(axis=0, columns=["dateint","time_int","date_y"], inplace=True)
     raw3.rename(columns={"date_x":"date"},inplace=True)
+    # refill unique-value columns to avoid NA in them
     raw3["ID"] = dummy.ID[0]
     raw3["interval"] = dummy.interval[0]
     raw3["Parameter"] = dummy.Parameter[0]

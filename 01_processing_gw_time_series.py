@@ -10,8 +10,8 @@ Other than that, discarded time series are collected in extra tables and exporte
 # Configuration: Path names, output names and other settings are defined here.
 config = {
     "basepath" : "/mnt/storage/grow/Groundwater/", # GROW project directory for groundwater data
-    "wells": "01_IGRAC_data_2024_06_x", # folder in which IGRAC's groundwater data is located
-    "country_name_pos": 54, # position of first country letter in file path to extract country information
+    "wells": "01_IGRAC_data_2025_04_16", # folder in which IGRAC's groundwater data is located
+    "country_name_pos": 55, # position of first country letter in file path to extract country information
     # paths of exported output files
     "output": {"name":"_V07", # name of version
                "data":"02_Timeseries/wells_timeseries",
@@ -30,7 +30,7 @@ config = {
                "par": "02_Timeseries/wells_mul_par_all",
                "lost_per": "02_Statistics/wells_timeseries_drops",
                "duration": "GGMN_preprocessing_duration.txt"},
-    "small": True # If True, only 1/5 of the data is processed to create a smaller test dataset
+    "small": False # If True, only 1/5 of the data is processed to create a smaller test dataset
 }
 
 # Import packages
@@ -39,6 +39,7 @@ from datetime import datetime # internal package
 import pandas as pd # imported version: 2.2.3
 import numpy as np # imported version: 2.2.4
 import warnings # built-in package
+import shutil # built-in package
 from dateutil.relativedelta import relativedelta # built-in package
 from func_processing_gw_time_series import get_max_dist # derives maximum allowed gap length
 from func_processing_gw_time_series import trim_max_dist # limits maximum allowed gap length to threshold
@@ -94,7 +95,7 @@ for path in full_path:
     txt_files = []
     for root, dirs, files in os.walk(path):
         for file in files:
-            if file.endswith(".xlsx"):
+            if file.endswith(".ods"):
                 txt_files.append(os.path.join(root, file))
 
     if config["small"]:
@@ -107,8 +108,16 @@ for path in full_path:
         counter = counter + 1
         pd.Series([str(datetime.now() - startTime),counter,file]).to_csv(config["basepath"]  + "counter" + config["output"]["name"] + ".txt")
 
-        # Read station
-        raw = pd.read_excel(file, engine='openpyxl', sheet_name=0, skiprows=[1, 1], dtype={"ID": object})
+        # Check if there is content in the other two sheets ("Groundwater Quality", "Abstraction-Discharge")
+        qual = pd.read_excel(file, engine='odf', sheet_name=1, skiprows=[1, 1])
+        abstract = pd.read_excel(file, engine='odf', sheet_name=2, skiprows=[1, 1])
+        if (qual.empty == False):
+            qual.to_csv(config["basepath"]+"qual_"+file[config["country_name_pos"]:config["country_name_pos"]+3]+str(qual.ID[0])+".txt",sep=";", index=False)
+        if (abstract.empty == False):
+            abstract.to_csv(config["basepath"]+"abstract_"+file[config["country_name_pos"]:config["country_name_pos"]+3]+str(abstract.ID[0])+".txt",sep=";", index=False)
+
+        # Read groundwater time series
+        raw = pd.read_excel(file, engine='odf', sheet_name=0, skiprows=[1, 1], dtype={"ID": object})
         raw.dropna(subset=["Value"],inplace = True,  ignore_index= True)
 
         # Some time series have duplicate records, lets get rid of them
@@ -123,7 +132,7 @@ for path in full_path:
             continue
 
         # Convert datetime column
-        raw['Date and Time'] = pd.to_datetime(raw['Date and Time'], format='%Y-%m-%d %H:%M:%S UTC')
+        raw['Date and Time'] = pd.to_datetime(raw['Date and Time'], format='mixed')
         # flag year,month and day
         raw["year"] = raw['Date and Time'].dt.year.astype("int")
         raw["month"] = raw['Date and Time'].dt.to_period('M')
@@ -139,7 +148,7 @@ for path in full_path:
             outliers_parameter = outliers_parameter + [raw]
             # we select water table depth because this parameter appears more often, ergo more data is rescued
             raw = raw[raw.Parameter == "Water depth [from the ground surface]"].reset_index(drop=True)
-            # Check if time series is more than one record
+            # When time series is too short, discard current time series and continue with the next time series
             if len(raw)<2:
                 data_lost_b = data_lost_b + [raw]
                 continue  ## discard this time series when there is only one record left now
@@ -159,6 +168,7 @@ for path in full_path:
                 outliers_level = outliers_level + [raw]
                 raw = raw.drop(raw[(raw.Value == -999) | (raw.Value == -9999)].index).reset_index(drop=True)
 
+        # When time series is too short, discard current time series and continue with the next time series
         if len(raw)<2:
             data_lost_c = data_lost_c + [raw]
             continue
@@ -191,15 +201,16 @@ for path in full_path:
         raw2 = raw[["ID", "Parameter","Value","interval","aggregated_from_n_values"]].groupby(raw["merge"]).aggregate(params)
         raw2.reset_index(inplace=True)
         raw2.rename(columns={raw2.columns[0]: "date" }, inplace = True) # rename time column
-        # Aggregated unique parameters were saved as np.array, unpack them
+        ## Aggregated unique parameters were saved as np.array, unpack them
         for col in raw2.columns:
             raw2[col]= raw2.apply(lambda x: pd.Series(x[col]), axis=1)
 
+        ## When time series is too short, discard current time series and continue with the next time series
         if len(raw2)<2:
             data_lost_d = data_lost_d + [raw2]
             continue
 
-        ### Gaps
+        # Gaps
 
         ## Get max distance based on autocorrelation
         max_dist, bol = get_max_dist(raw2, 0.6, 30, False) # when they are time steps with exact same time, 0 is returned
@@ -208,32 +219,33 @@ for path in full_path:
         yn = abs(relativedelta(raw2["date"].iloc[-1], raw2["date"].iloc[0]).years) + 1
 
         if raw2.interval[0] == "d":
-            max_dist = trim_max_dist(max_dist, 7)
+            max_dist = trim_max_dist(max_dist, 7) # maximum allowed gap between daily time steps is 6 days --> allowed distance between existing time steps is 7
             threshold = 7 # save for plateaus later
         elif raw2.interval[0] == "MS":
-            max_dist = trim_max_dist(max_dist, 123)
+            max_dist = trim_max_dist(max_dist, 123) # a distance of 4 months (with possibly 3x 31-days-months) is allowed = 123 days
             threshold = 4
         else:
             if yn < 3:
-                max_dist = trim_max_dist(max_dist, 366)
+                max_dist = trim_max_dist(max_dist, 366) # no gaps are allowed, 366 to include leap years
                 threshold = 4 # no plateaus can be flagged
             elif (yn > 2) & (yn < 10):
-                max_dist = trim_max_dist(max_dist, 731)
+                max_dist = trim_max_dist(max_dist, 731) # a distance of 2 years (possibly including a leap year) is allowed
                 threshold = 2
             elif (yn > 9) & (yn < 15):
-                max_dist = trim_max_dist(max_dist, 1096)
+                max_dist = trim_max_dist(max_dist, 1096) # a distance of 3 years (possibly including a leap year) is allowed
                 threshold = 3
             elif (yn > 14) & (yn < 20):
-                max_dist = trim_max_dist(max_dist, 1461)
+                max_dist = trim_max_dist(max_dist, 1461) # a distance of 4 years (including a leap year) is allowed
                 threshold = 4
             else:
-                max_dist = trim_max_dist(max_dist, 1827)
+                max_dist = trim_max_dist(max_dist, 1827) # a distance of 5 years (including two leap years) is allowed
                 threshold = 5
 
         ## Extract longest sequence with intervals below max_dist
         diff = abs(np.diff(raw2["date"]).astype('timedelta64[s]')).astype("int") / 86400 # interval between every time step in days
         raw3 = extract_seq(raw2,diff,"int","<=",max_dist, append=True)
 
+        ## When time series is too short, discard current time series and continue with the next time series
         if len(raw3)<2:
             data_lost_e = data_lost_e + [raw3]
             continue
@@ -242,9 +254,9 @@ for path in full_path:
         raw4 = fill_gaps(raw3)
 
         ## Maximum gap length
-        isna = raw4.Value.isna()
-        blocks = (~isna).cumsum()
-        gaps = isna.groupby(blocks).sum()
+        isna = raw4.Value.isna() # get index where groundwater record is missing (NA)
+        blocks = (~isna).cumsum() # creates groups for consecutive values (here only True or False - groups)
+        gaps = isna.groupby(blocks).sum() # calculate length of continuous NA-sequences
         max_gap = gaps.max()
         mean_gap = gaps[gaps != 0].median()
 
@@ -263,6 +275,7 @@ for path in full_path:
             years_list = list(np.unique(raw4.year))
             years_list = years_list[longest_seq.min():longest_seq.max()+1]
             raw5 = raw4[raw4.year.isin(years_list)].reset_index(drop=True)
+            # When time series is too short, discard current time series and continue with the next time series
             if len(raw5)<2:
                 data_lost_f = data_lost_f + [raw5]
                 continue # data is discarded
@@ -271,21 +284,21 @@ for path in full_path:
         else:
             raw5 = raw4
 
-        ## Flag jumps and spikes
-        jum = pd.Series(np.diff(raw5.Value))
-        jum_num = len(jum[abs(jum) > 50])
+        # Flag jumps and spikes
+        jum = pd.Series(np.diff(raw5.Value)) # calculate water level changes between time steps
+        jum_num = len(jum[abs(jum) >= 50]) # counts number of water level changes between time steps that are higher than or equal to 50 m
         if jum_num > 0 & jum_num < 3: # if they are only one or two jumps, it is rather a problem with the device than the natural variance
             outliers_jumps = outliers_jumps + [raw5]
-            jumps = True
+            jumps = True # Whole time series is flagged to contain suspicious jumps
         else:
-            jumps = False
+            jumps = False # Whole time series is flagged to contain no suspicious jumps
 
-        ## Flag plateaus
+        # Flag plateaus
         groups = (raw5["Value"] != raw5["Value"].shift()).cumsum()  # Create groups for consecutive values
-        raw5["plateaus"] = raw5["Value"].groupby(groups).transform('size') # add size per group as column
+        raw5["plateaus"] = raw5["Value"].groupby(groups).transform('size') # add length per group as column
         raw5.plateaus[raw5.plateaus < threshold] = 0 # turn every group under threshold into 0
         if (raw5.plateaus>0).any():
-            outliers_plateaus = outliers_plateaus + [raw5]
+            outliers_plateaus = outliers_plateaus + [raw5] # store all time series with plateaus
 
         # Add year, month and country again
         raw5["year"] = raw5['date'].dt.year.astype("int")
@@ -295,19 +308,21 @@ for path in full_path:
         # Clean-up columns
         raw5.rename(columns={"Parameter":"parameter","Value":"groundwater"}, inplace=True)
         raw5 = raw5[["ID","country","interval","date","year","month","aggregated_from_n_values",
-                     "plateaus","parameter","groundwater","groundwater_filled"]]
+                     "plateaus","parameter","groundwater","groundwater_filled"]] # reorder
 
-        # Get attributes
+        # Derive time series attributes
+
+        ## add trend; trend direction and slope sign are switched when the reference point is water table depth
+        trend, slope = calc_trend(raw5, bol) # If autocorrelation (bol=True) was detected, Ramed and Hao method is used
+
+        ## number of occuring years
         yn = abs(relativedelta(raw5["date"].iloc[-1], raw5["date"].iloc[0]).years) + 1
 
-        ## mark for time series attributes
+        ## Flag for attributes, if time series contains any plateaus
         if raw5.plateaus.any() != 0:
             plat = True
         else:
             plat = False
-
-        ## add trend; trend direction is switched when water table depth
-        trend, slope = calc_trend(raw5, bol) # If autocorrelation (bol=True) was detected, Ramed and Hao method is used to deal with it
 
         ## create attributes table
         attributes = pd.DataFrame({"ID": [raw5.loc[0, "ID"]], "country": [raw5.loc[0, "country"]],
@@ -316,11 +331,13 @@ for path in full_path:
                       "reference_point": [raw5.loc[0, "parameter"]],"autocorrelation": bol, "aggregated_from_n_values_median": [raw5.aggregated_from_n_values.median()],
                       "gap_fraction ": [gap_amount], "jumps": jumps, "plateaus": [plat],"trend_direction": [trend],
                       "trend_slope_m_year-1)": [slope],"groundwater_mean_m": [raw5.groundwater.mean()], "groundwater_median_m": [raw5.groundwater.median()]})
+        ## create table with descriptive statistics about the gaps in the time series
         max_distance = pd.DataFrame({"ID": [raw5.loc[0, "ID"]], "country":  [raw5.loc[0, "country"]], "interval": [raw5.loc[0, "interval"]], "max_dist": [max_dist],
                         "max_filled_gap": [max_gap], "mean_filled_gap": [mean_gap], "gap_count": [gap_amount]})
 
-        # append data to files
+        # append new data to files
         if counter == 1:
+            # when this is the first time series
             raw5.to_csv(config["basepath"] + config["output"]["data"] + config["output"]["name"] + ".txt", index=False,sep=";")
             attributes.to_csv(config["basepath"] + config["output"]["ts_attributes"] + config["output"]["name"] + ".txt", index=False,sep=";")
             max_distance.to_csv(config["basepath"] + config["output"]["max_dist"] + config["output"]["name"] + ".txt", index=False,sep=";")
