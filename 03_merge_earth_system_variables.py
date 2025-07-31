@@ -9,8 +9,8 @@ all parts are put together again.'''
 # Configuration: Path names, output names and other settings are defined here.
 config = {
     "basepath" : "/mnt/storage/grow/", # GROW project directory
-    "wells" : "Groundwater/02_Attributes/wells_attributes_V05.txt", # path to groundwater attributes table
-    "timeseries": "Groundwater/02_Timeseries/wells_timeseries_final_V05.txt", # path to groundwater time series table
+    "wells" : "Groundwater/02_Attributes/wells_attributes_V07.txt", # path to groundwater attributes table
+    "timeseries": "Groundwater/02_Timeseries/wells_timeseries_final_V07.txt", # path to groundwater time series table
     # paths to original data of Earth system variables; path to file for static variables; path to folder containing files for time series variables
     "factors": {"dem": "Topography/MERIT_DEM/MERIT/MERIT_DEM.tif",
                 "slope": "Topography/Slope_MERIT_DEM/dtm_slope_merit.dem_m_250m_s0..0cm_2018_v1.0.tif",
@@ -50,8 +50,8 @@ config = {
     "modules": {"gk":True,"hydrobelts":True, "dem":True,"slope":True,"glim":True,"aquifer":True,
                 "permeability":True,"porosity":True,"soil_text":True,"soil_kat":True,
                 "dist_streams":True,"dd":True,"dd_calc_map":False,"cyro":True,
-                "ggde":True,"gw_scapes":True,"mswep":True,"ndvi":True,"gleam":True,
-                "era5":True,"gpcc":True,"abstract":True,"lu":True,
+                "ggde":True,"gw_scapes":True,"mswep":False,"ndvi":True,"gleam":False,
+                "era5":False,"gpcc":True,"abstract":True,"lu":True,
                 "static":False, "timeseries":True, "joinall":True},
     "cores_num":100 # Number of cores that work in parallel in the time series module
 }
@@ -342,8 +342,6 @@ if config["modules"]["timeseries"]:
                 r = "0"+ r
             # Add function and parameter to list
             functions.append((total_merge, (ele,ts,r)))
-
-        total_merge(wells_parts[5], ts, "05")
 
         # Start the 100 processes
         with multiprocessing.Pool(processes=num_cores) as pool:

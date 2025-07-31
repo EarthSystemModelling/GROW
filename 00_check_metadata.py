@@ -7,13 +7,12 @@ to add the sheet to GROW's attribute table or not.'''
 # Configuration: Path names, output names and other settings are defined here.
 config = {
     "basepath" : "/mnt/storage/grow/Groundwater/", # directory in which groundwater data and all groundwater related outputs of GROW are located
-    "wells": "01_IGRAC_data_2025_04_16", # folder with IGRACs groundwater data
+    "wells": "Well_And_Monitoring_Data", # folder with IGRACs groundwater data
 }
 
 # Import packages
 import os # built-in package
 import pandas as pd # imported version: 2.2.3
-from func_merge_earth_system_variables import get_paths # derived file paths
 
 # Derive well attributes per sheet
 
@@ -33,31 +32,31 @@ structure = []
 
 # loop over every country folder
 for fold in folders:
-    file = config["basepath"] + config["wells"] + "/" + fold + "/" + "wells.ods"
+    file = config["basepath"] + config["wells"] + "/" + fold + "/" + "wells.xlsx"
 
-    well = pd.read_excel(file, engine = 'odf', sheet_name=1, skiprows= [1,1])
+    well = pd.read_excel(file, engine = 'openpyxl', sheet_name=1, skiprows= [1,1])
     if (well.empty == False):
         hydrogeo.append(well)
 
-    well = pd.read_excel(file, engine='odf', sheet_name=2, skiprows=[1, 1])
+    well = pd.read_excel(file, engine='openpyxl', sheet_name=2, skiprows=[1, 1])
     if (well.empty==False):
         management.append(well)
 
-    file = config["basepath"] + config["wells"] + "/" + fold + "/" + "drilling_and_construction.ods"
+    file = config["basepath"] + config["wells"] + "/" + fold + "/" + "drilling_and_construction.xlsx"
 
-    well = pd.read_excel(file, engine='odf', sheet_name=0, skiprows=[1, 1])
+    well = pd.read_excel(file, engine='openpyxl', sheet_name=0, skiprows=[1, 1])
     if (well.empty == False):
         construction.append(well)
 
-    well = pd.read_excel(file, engine='odf', sheet_name=1, skiprows=[1, 1])
+    well = pd.read_excel(file, engine='openpyxl', sheet_name=1, skiprows=[1, 1])
     if (well.empty == False):
         water_strike.append(well)
 
-    well = pd.read_excel(file, engine='odf', sheet_name=2, skiprows=[1, 1])
+    well = pd.read_excel(file, engine='openpyxl', sheet_name=2, skiprows=[1, 1])
     if (well.empty == False):
         log.append(well)
 
-    well = pd.read_excel(file, engine='odf', sheet_name=3, skiprows=[1, 1])
+    well = pd.read_excel(file, engine='openpyxl', sheet_name=3, skiprows=[1, 1])
     if (well.empty == False):
         structure.append(well)
 
@@ -69,7 +68,5 @@ all_as_df = {"hydrogeo_df":pd.concat(hydrogeo), "management_df": pd.concat(manag
 # Number of wells with information for every excel sheet
 for sheet in all_as_df:
     print(sheet)
-    print(len(all_as_df[sheet].iloc[:,2:][all_as_df[sheet].iloc[:,2:].isnull().all(1)==False]))
-
-breakpoint()
+    print(len(all_as_df[sheet].iloc[:,1:][all_as_df[sheet].iloc[:,1:].isnull().all(1)==False]))
 

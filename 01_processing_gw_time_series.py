@@ -10,8 +10,8 @@ Other than that, discarded time series are collected in extra tables and exporte
 # Configuration: Path names, output names and other settings are defined here.
 config = {
     "basepath" : "/mnt/storage/grow/Groundwater/", # GROW project directory for groundwater data
-    "wells": "01_IGRAC_data_2025_04_16", # folder in which IGRAC's groundwater data is located
-    "country_name_pos": 55, # position of first country letter in file path to extract country information
+    "wells": "01_IGRAC_data_2024_06_x", # folder in which IGRAC's groundwater data is located
+    "country_name_pos": 54, # position of first country letter in file path to extract country information
     # paths of exported output files
     "output": {"name":"_V07", # name of version
                "data":"02_Timeseries/wells_timeseries",
@@ -30,7 +30,7 @@ config = {
                "par": "02_Timeseries/wells_mul_par_all",
                "lost_per": "02_Statistics/wells_timeseries_drops",
                "duration": "GGMN_preprocessing_duration.txt"},
-    "small": False # If True, only 1/5 of the data is processed to create a smaller test dataset
+    "small": True # If True, only 1/5 of the data is processed to create a smaller test dataset
 }
 
 # Import packages
@@ -95,7 +95,7 @@ for path in full_path:
     txt_files = []
     for root, dirs, files in os.walk(path):
         for file in files:
-            if file.endswith(".ods"):
+            if file.endswith(".xlsx"):
                 txt_files.append(os.path.join(root, file))
 
     if config["small"]:
@@ -108,16 +108,8 @@ for path in full_path:
         counter = counter + 1
         pd.Series([str(datetime.now() - startTime),counter,file]).to_csv(config["basepath"]  + "counter" + config["output"]["name"] + ".txt")
 
-        # Check if there is content in the other two sheets ("Groundwater Quality", "Abstraction-Discharge")
-        qual = pd.read_excel(file, engine='odf', sheet_name=1, skiprows=[1, 1])
-        abstract = pd.read_excel(file, engine='odf', sheet_name=2, skiprows=[1, 1])
-        if (qual.empty == False):
-            qual.to_csv(config["basepath"]+"qual_"+file[config["country_name_pos"]:config["country_name_pos"]+3]+str(qual.ID[0])+".txt",sep=";", index=False)
-        if (abstract.empty == False):
-            abstract.to_csv(config["basepath"]+"abstract_"+file[config["country_name_pos"]:config["country_name_pos"]+3]+str(abstract.ID[0])+".txt",sep=";", index=False)
-
-        # Read groundwater time series
-        raw = pd.read_excel(file, engine='odf', sheet_name=0, skiprows=[1, 1], dtype={"ID": object})
+        # Read station
+        raw = pd.read_excel(file, engine='openpyxl', sheet_name=0, skiprows=[1, 1], dtype={"ID": object})
         raw.dropna(subset=["Value"],inplace = True,  ignore_index= True)
 
         # Some time series have duplicate records, lets get rid of them
@@ -132,7 +124,7 @@ for path in full_path:
             continue
 
         # Convert datetime column
-        raw['Date and Time'] = pd.to_datetime(raw['Date and Time'], format='mixed')
+        raw['Date and Time'] = pd.to_datetime(raw['Date and Time'], format='%Y-%m-%d %H:%M:%S UTC')
         # flag year,month and day
         raw["year"] = raw['Date and Time'].dt.year.astype("int")
         raw["month"] = raw['Date and Time'].dt.to_period('M')
