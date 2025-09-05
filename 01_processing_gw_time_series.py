@@ -161,7 +161,8 @@ for path in full_path:
         ## Check if there is more than one parameter in time series and extract only one (table depth)
         if raw.Parameter.nunique() > 1:
             outliers_parameter = outliers_parameter + [raw]
-            # we select water table depth because this parameter appears more often, ergo more data is rescued
+            # we select water table depth because this parameter appears more often,
+            # ergo more data is rescued
             raw = raw[
                 raw.Parameter == "Water depth [from the ground surface]"
             ].reset_index(drop=True)
@@ -175,9 +176,8 @@ for path in full_path:
         if raw.loc[0, "Parameter"] != "Water level elevation a.m.s.l.":
             if (raw.Value < 0).all():  # all records are negative
                 outliers_depth_all = outliers_depth_all + [raw]
-                raw.Value = raw.Value * (
-                    -1
-                )  # when all values are negative, we just need a sign switch
+                # when all values are negative, we just need a sign switch
+                raw.Value = raw.Value * (-1)
             elif (raw.Value < 0).any():  # only some records are negative
                 outliers_depth_any = outliers_depth_any + [raw]
                 raw = raw.drop(index=raw[raw.Value < 0].index).reset_index(
@@ -344,13 +344,12 @@ for path in full_path:
         jum_num = len(
             jum[abs(jum) >= JUMP_THRESHOLD_METERS]
         )  # counts number of water level changes between time steps that are higher than or equal to 50 m
+        jumps = False
         if (
             jum_num > 0 & jum_num < 3
         ):  # if they are only one or two jumps, it is rather a problem with the device than the natural variance
             outliers_jumps = outliers_jumps + [raw5]
             jumps = True  # Whole time series is flagged to contain suspicious jumps
-        else:
-            jumps = False  # Whole time series is flagged to contain no suspicious jumps
 
         # Flag plateaus
         groups = (

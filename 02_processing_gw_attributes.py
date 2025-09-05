@@ -117,25 +117,22 @@ for fold in folders:
         },
         inplace=True,
     )
+    # unit is meters anyway and year of drilling is only provided for 12 wells, both are dropped to keep the table as small as possible
     construction.drop(
         columns=["Unit", "Year of drilling"], inplace=True, errors="ignore"
-    )  # unit is meters anyway and year of drilling is only provided for 12 wells, both are dropped to keep the table as small as possible
+    )
     # merge all attributes tables together
     well_mer1 = pd.merge(well, hydrogeo, on="ID", how="left")
     well_mer2 = pd.merge(well_mer1, man, on="ID", how="left")
     well_full = pd.merge(well_mer2, construction, on="ID", how="left")
     # drop full duplicates and duplicates by ID and country
-    well_full = well_full.drop_duplicates()  # drop full (identical in all columns) duplicates; appear during merge because there are ID duplicates
-    total_number = total_number + len(
-        well_full
-    )  # to count all existing wells in the dataset
-    subset = well_full.drop_duplicates(
-        subset=["ID"], keep=False
-    )  # subset all duplicates by ID TODO keep="first"?
+    well_full = well_full.drop_duplicates()
+    total_number = total_number + len(well_full)
+    # get duplicates by ID for further processing
+    subset = well_full[well_full.duplicated(subset=["ID"], keep=False)]
     if not subset.empty:
         # we know that some duplicates are created because records from the Jasechko et al. (2024) study and G3P campaign are duplicates
         # to save some records, we delete the records from Jasechko and G3P from the duplicates subset
-        # TODO Are these duplicates of each other, or of another source?
 
         orgs_to_exclude = ["Jasechko", "Wells for G3P evaluation"]
         pattern = "|".join(orgs_to_exclude)
@@ -143,43 +140,28 @@ for fold in folders:
             pattern, na=False, regex=True
         )
         excluded_indices = subset[exclude_mask].index
-        well_full = subset.drop(index=excluded_indices, errors="ignore")
-
-        # well_full = well_full.loc[
-        #     ~well_full.index.isin(
-        #         subset[subset["Organisation"].str.contains("Jasechko")].index
-        #     ),
-        #     :,
-        # ]  # Deleting Jasechko records in duplicates
-        # well_full = well_full.loc[
-        #     ~well_full.index.isin(
-        #         subset[
-        #             subset["Organisation"].str.contains("Wells for G3P evaluation")
-        #         ].index
-        #     ),
-        #     :,
-        # ]  # Deleting G3P records in duplicates
-
+        # drop rows based on organisation
+        well_full = well_full.drop(index=excluded_indices, errors="ignore")
+        # drop rows based on description
         well_full = well_full.drop(
             subset[subset["Description"].str.contains("G3P", na=False)]
-        )  # Deleting G3P records in duplicates
+        )
 
-    well_full = well_full.drop_duplicates(
-        subset=["ID"]
-    )  # Delete all duplicate ID's from well attributes table
-    all_kept = all_kept + len(well_full)  # to count all kept wells in the dataset
+    # Drop all remaining duplicates as we can't determine which one to keep
+    well_full = well_full.drop_duplicates(subset=["ID"], keep=False)
+    all_kept = all_kept + len(well_full)
     wells.append(well_full)
     wells_drop.append(subset)
 
-all_dropped = (
-    total_number - all_kept
-)  # number of lost records in th attributes table due to duplicates
+# number of lost records in th attributes table due to duplicates
+all_dropped = total_number - all_kept
+# export partitioned lists of wells
 pd.concat(wells).to_csv(
     config["basepath"] + config["output"]["all"], sep=";", index=False
-)  # export kept well attributes
+)
 pd.concat(wells_drop).to_csv(
     config["basepath"] + config["output"]["all_dups"], sep=";", index=False
-)  # export discarded well attributes
+)
 
 ## Preprocess attributes table
 

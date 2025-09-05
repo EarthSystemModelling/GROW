@@ -1,7 +1,7 @@
 """This file contains all functions that are used in "03_merge_earth_system_variables.py"."""
 
 # import packages
-from datetime import datetime  # built-in package
+from datetime import datetime
 from dateutil.relativedelta import relativedelta  # built-in package
 import pandas as pd  # imported version: 2.2.3
 import os  # built-in package
@@ -16,7 +16,8 @@ def get_paths(path, pattern, pattern2=None, full=False):
     path: folder in which to search
     pattern: string pattern
     pattern2: second string pattern can be given if full=True
-    full: pattern and pattern2 need to occur in file name"""
+    full: pattern and pattern2 need to occur in file name
+    """
     txt_files = []
     # search in every subdirectory for files with pattern
     for root, dirs, files in os.walk(path):
@@ -35,7 +36,8 @@ def get_paths(path, pattern, pattern2=None, full=False):
 def calc_dd(config):
     """Calculates global drainage density (sum of river lengths/ area of basin) with HydroBASINS and HydroRIVERS.
 
-    config: configuration dictionary"""
+    config: configuration dictionary
+    """
     # import HydroBASINS shapefile
     basins = gpd.read_file(config["basepath"] + config["factors"]["basins"])
     basins.to_crs(
@@ -313,7 +315,7 @@ def aggregate_merge(config, df, imp_name, i, exp_name, daily=False, yearly=False
     if yearly:
         # target variable has yearly resolution; all data is aggregated to a yearly resolution
         raster["merge"] = raster["time"].dt.year.astype("int")
-    elif daily:
+    elif not daily:
         # target variable has monthly resolution
         # data assigned to daily and monthly groundwater time series are aggregated to a monthly resolution
         raster["merge"][(raster.intervall == "MS") | (raster.intervall == "d")] = (

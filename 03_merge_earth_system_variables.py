@@ -254,19 +254,18 @@ if config["modules"]["static"]:
         )  # gets path to topsoil and subsoil file
         # loop for soil texture class for topsoil and subsoil
         for file in soilfiles:
-            # TODO DN: document and/or parameterize the magic indices
-            merge_raster_static(
-                wells, file, col_name=file[-22:-4]
-            )  # column name is derived by file name
+            col_name = file[-22:-4]
+            # column name is derived by file name
+            merge_raster_static(wells, file, col_name=col_name)
             # Convert numeric values to class names
             codes = pd.read_csv(
                 config["basepath"] + config["factors"]["soil_texture"]["codes"], sep=";"
             )
             wells = pd.merge(
-                wells, codes, how="left", left_on=file[-22:-4], right_on="value"
-            ).drop(columns={file[-22:-4], "value"})
+                wells, codes, how="left", left_on=col_name, right_on="value"
+            ).drop(columns={col_name, "value"})
             wells.rename(
-                columns={"soil_texture_class": file[-22:-4]}, inplace=True
+                columns={"soil_texture_class": col_name}, inplace=True
             )  # rename so that the column is not overwriten in the second run of the loop
         wells.rename(
             columns={
@@ -282,9 +281,10 @@ if config["modules"]["static"]:
             config["basepath"] + config["factors"]["soil_kat"], "tif"
         )  # gets path to topsoil and subsoil file
         for file in soilfiles:
-            merge_raster_static(wells, file, col_name=file[-22:-4])
-            wells[file[-22:-4]] = (
-                wells[file[-22:-4]] * 0.0001
+            col_name = file[-22:-4]
+            merge_raster_static(wells, file, col_name=col_name)
+            wells[col_name] = (
+                wells[col_name] * 0.0001
             )  # rescale (scaling factor in original data)
         wells.rename(
             columns={
