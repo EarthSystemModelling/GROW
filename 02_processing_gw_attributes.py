@@ -11,8 +11,8 @@ the ID's that are still left in the preprocessed attributes table. An unique GRO
 config = {
     "basepath" : "/mnt/storage/grow/Groundwater/", # GROW project directory for groundwater data
     "wells": "01_IGRAC_data_2025_04_16", # folder in which IGRAC's groundwater data is located
-    "timeseries_att": "02_Timeseries/wells_timeseries_attributes_V07.txt", # time series attributes derived in "01_processing_gw_time_series"
-    "timeseries" : "02_Timeseries/wells_timeseries_V07.txt", # time series table derived in "01_processing_gw_time_series"
+    "timeseries_att": "02_Timeseries/wells_timeseries_attributes_V08.txt", # time series attributes derived in "01_processing_gw_time_series"
+    "timeseries" : "02_Timeseries/wells_timeseries_V08.txt", # time series table derived in "01_processing_gw_time_series"
     # paths of exported output files
     "output": {"name": "_V07", # name of version
                "all":"02_Attributes/wells_attributes_all.csv",

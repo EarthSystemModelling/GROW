@@ -5,7 +5,7 @@
       <paths name="baethge@134.93.182.239:5555 password">
         <serverdata>
           <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/home/baethge/.virtualenvs/GROW_V1.0/V1.1" local="$PROJECT_DIR$/V1.1" web="/" />
           </mappings>
         </serverdata>
       </paths>
@@ -38,6 +38,13 @@
         </serverdata>
       </paths>
       <paths name="baethge@134.93.182.239:5555 password (6)">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="baethge@134.93.182.239:5555 password (7)">
         <serverdata>
           <mappings>
             <mapping local="$PROJECT_DIR$" web="/" />
