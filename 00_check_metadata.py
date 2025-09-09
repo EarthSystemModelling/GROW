@@ -1,6 +1,10 @@
-'''In the original groundwater data, the attributes per time series are stored in 2 excel files with a total of 7 excel sheets.
+"""In the original groundwater data, the attributes per time series are stored in 2 excel files with a total of 7 excel sheets.
 In this script, the number of wells that contain information (not NA) per sheet is printed. Based on this, we decided whether
-to add the sheet to GROW's attribute table or not.'''
+to add the sheet to GROW's attribute table or not."""
+
+import os  # built-in package
+
+import pandas as pd  # imported version: 2.2.3 4
 
 # Configuration: Path names, output names and other settings are defined here.
 config = {
@@ -8,17 +12,13 @@ config = {
     "wells": "01_IGRAC_data_2025_08_18", # folder with IGRACs groundwater data
 }
 
-# Import packages
-import os # built-in package
-import pandas as pd # imported version: 2.2.3
-#
 # Derive well attributes per sheet
 
-'''In the following, all excel files containing well attributes are sourced and merged into a table per excel sheet.
-That makes one large table with each well per sheet. Afterwards the lengths of the rows which contain other information than the
-wells ID are counted and printed.'''
+"""In the following, all excel files containing well attributes are sourced and merged into a table per excel sheet.
+That makes one large tabe with each well per sheet. Afterwards the lengths of the rows which contain other information than the
+wells ID are counted and printed."""
 
-folders = os.listdir(config["basepath"] + config["wells"]) # directory for each country
+folders = os.listdir(config["basepath"] + config["wells"])  # directory for each country
 
 # Creating empty lists per excel sheet
 hydrogeo = []
@@ -55,13 +55,18 @@ for fold in folders:
         log.append(well)
 
     well = pd.read_excel(file, engine='odf', sheet_name=3, skiprows=[1, 1])
-    if (well.empty == False):
+    if not well.empty:
         structure.append(well)
 
 # Dictionary with dataframe per excel sheet
-all_as_df = {"hydrogeo_df":pd.concat(hydrogeo), "management_df": pd.concat(management),
-             "construction_df":pd.concat(construction), "water_strike_df":pd.concat(water_strike),
-             "log_df":pd.concat(log), "structure_df":pd.concat(structure)}
+all_as_df = {
+    "hydrogeo_df": pd.concat(hydrogeo),
+    "management_df": pd.concat(management),
+    "construction_df": pd.concat(construction),
+    "water_strike_df": pd.concat(water_strike),
+    "log_df": pd.concat(log),
+    "structure_df": pd.concat(structure),
+}
 
 # Number of wells with information for every excel sheet
 for sheet in all_as_df:
