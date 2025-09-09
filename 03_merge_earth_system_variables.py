@@ -4,7 +4,7 @@ are merged to the groundwater time series within a parallelized process (server 
 The time series table is split into 100 parts for which the variables are added in parallel. In the end,
 all parts are put together again.
 """
-
+#
 # Configuration: Path names, output names and other settings are defined here.
 config = {
     "basepath" : "/mnt/storage/grow/", # GROW project directory

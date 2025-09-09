@@ -11,7 +11,7 @@ config = {
 # Import packages
 import os # built-in package
 import pandas as pd # imported version: 2.2.3
-
+#
 # Derive well attributes per sheet
 
 '''In the following, all excel files containing well attributes are sourced and merged into a table per excel sheet.
