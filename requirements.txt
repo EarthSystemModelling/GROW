@@ -16,4 +16,3 @@ shapely==2.1.1
 six==1.17.0
 tzdata==2025.2
 xarray==2025.8.0
-pyarrow==19.0.1
