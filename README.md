@@ -23,7 +23,7 @@ References and descriptions to the original data can be found in:
 
 (Bäthge et al.2025) ~ here I will cite the preprint
 
-**The worklfow to create GROW is implemented in the following scripts which should be run sequentially in the order:**
+**The workflow to create GROW is implemented in the following scripts which should be run sequentially in the order:**
 
 1. 01_processing_gw_time_series.py
 2. 02_processing_gw_attributes.py
@@ -34,14 +34,12 @@ A description of each script's function is given below:
 ### 00_check_metadata.py
 
 In the original groundwater data, the attributes per time series are stored in 2 excel files with a total of 7 excel sheets.
-In this script, the number of wells that contain information (not NA) per sheet is printed. Based on this, we decided whether 
-to add the sheet to GROW's attribute table or not.
+In this script, the number of wells that contain information (not NA) per sheet is printed. Based on this, we decided whether to add the sheet to GROW's attribute table or not.
 
 ### 01_processing_gw_time_series.py
 
 A single table containing all time series is created. 
-Every time series of the original data is stored in an individual excel file. In this script, each time series file is consecutively
-read, processed, quality-checked, eventually discarded or appended to a single table. 
+Every time series of the original data is stored in an individual excel file. In this script, each time series file is consecutively read, processed, quality-checked, eventually discarded or appended to a single table. 
 Data flags are generated and either added as column to the time series data or exported to a time series attributes table.
 Other than that, discarded time series are collected in extra tables and exported. Time series statistics are derived and exported.
 
@@ -54,9 +52,11 @@ This file contains all functions that are used in "01_processing_gw_time_series.
 The attributes table and the final time series table are created.
 Firstly, all files containing static (no temporal dimension) well attributes per country are read and merged together.
 A) duplicates by ID and country and b) duplicates by coordinates, starting date, ending date and mean groundwater
-table are removed. Further, wells with coordinates outside realistic ranges are removed. Attributes generated in the
+table are removed. 
+Further, wells with coordinates outside realistic ranges are removed. Attributes generated in the
 time series processing are merged to the attributes from the original data. The time series table is trimmed to 
-the ID's that are still left in the preprocessed attributes table. An unique GROW ID is created.
+the ID's that are still left in the preprocessed attributes table. 
+A unique GROW ID is created.
 
 ### 03_merge_earth_system_variables.py
 
