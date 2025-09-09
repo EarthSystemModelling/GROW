@@ -1,7 +1,7 @@
 """This file contains all functions that are used in "03_merge_earth_system_variables.py"."""
 
 # import packages
-from datetime import datetime
+from datetime import datetime # built-in package
 from dateutil.relativedelta import relativedelta  # built-in package
 import pandas as pd  # imported version: 2.2.3
 import os  # built-in package
@@ -34,24 +34,24 @@ def get_paths(path, pattern, pattern2=None, full=False):
 
 
 def calc_dd(config):
-    """Calculates global drainage density (sum of river lengths/ area of basin) with HydroBASINS and HydroRIVERS.
+    """Calculates global drainage density (sum of river lengths/ area of basin)
+    with HydroBASINS and HydroRIVERS.
 
     config: configuration dictionary
     """
     # import HydroBASINS shapefile
     basins = gpd.read_file(config["basepath"] + config["factors"]["basins"])
-    basins.to_crs(
-        epsg="ESRI:54012", inplace=True
-    )  # reproject to metric crs World-Eckert-IV
-    basins["area"] = basins.area  # recalculate area with the metric crs in m²
+    # reproject to metric crs World-Eckert-IV
+    basins.to_crs(epsg="ESRI:54012", inplace=True)
+    # recalculate area with the metric crs in m²
+    basins["area"] = basins.area
     # calculate absolute difference between original area and calculated area in World-Eckert-IV
     basins["area_diff"] = abs(basins["SUB_AREA"] - (basins["area"] / 1000000))
 
     # import HydroRivers shapefile
     riv = gpd.read_file(config["basepath"] + config["factors"]["rivers"])
-    riv.to_crs(
-        epsg="ESRI:54012", inplace=True
-    )  # reproject to metric crs World-Eckert-IV
+    # reproject to metric crs World-Eckert-IV
+    riv.to_crs(epsg="ESRI:54012", inplace=True)
     # intersect rivers and basins (cut river polylines at basin borders)
     riv_cut = gpd.overlay(basins, riv, how="intersection", keep_geom_type=False)
     riv_cut["riv_len"] = riv_cut.length  # calculate length of every river segment in m
@@ -63,18 +63,15 @@ def calc_dd(config):
     # calculate "drainage density" per basin
     dd["Drainage_den"] = dd["riv_len"] / dd["area"]
     # set drainage density to None, where area difference is 10 km-2 or larger
-    wells.loc[wells.area_diff >= 10, "Drainage_den"] = (
-        None  # TODO DN: dd instaed of wells?
-    )
-
+    dd.loc[dd.area_diff >= 10, "Drainage_den"] = None  # TODO DN: dd instaed of wells? You are right that should be dd
     # export as shapefile
     dd.drop(columns={"area_diff", "area"}, inplace=True)
     dd.to_file(config["basepath"] + config["factors"]["drain_den"])
 
 
 def merge_raster_static(df, rasterfile, col_name=None, transform=False):
-    """In this function, raster values of a static target variable are extracted at the well locations and
-    merged to the well attributes table.
+    """In this function, raster values of a static target variable are extracted at
+    the well locations andmerged to the well attributes table.
 
     df: dataframe with well coordinates
     rasterfile: raster file path of target variable
@@ -89,12 +86,10 @@ def merge_raster_static(df, rasterfile, col_name=None, transform=False):
         raster = raster.rio.reproject("EPSG:4326")
 
     def extract_well_static(row, values):
-        extract = raster.sel(
-            {"y": row["latitude"], "x": row["longitude"]}, method="nearest"
-        )  # dataset is trimmed to the well location
-        values.append(
-            pd.Series(extract["band_data"].values)[0]
-        )  # value is extracted from the xarray dataset and appended to a list
+        # dataset is trimmed to the well location
+        extract = raster.sel({"y": row["latitude"], "x": row["longitude"]}, method="nearest")
+        # value is extracted from the xarray dataset and appended to a list
+        values.append(pd.Series(extract["band_data"].values)[0])
 
     values = []
     # for every well location, the raster value is extracted and appended to a list
@@ -104,17 +99,15 @@ def merge_raster_static(df, rasterfile, col_name=None, transform=False):
 
 
 def merge_vector_point(vector, df, columns):
-    """In this function, polygon values of a static target variable are extracted at the well locations and
-    merged to the well attribute table via spatial join.
+    """In this function, polygon values of a static target variable are extracted at the well
+    locations and merged to the well attribute table via spatial join.
 
     vector: geopandas dataframe of vector product
     df: dataframe with well coordinates
     columns: attributes that shall be extracted from the vector product"""
     # TODO DN: check
     # convert dataframe with well attributes to geopandas dataframe
-    gdf = gpd.GeoDataFrame(
-        df, geometry=gpd.points_from_xy(df.longitude, df.latitude), crs="EPSG:4326"
-    )
+    gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.longitude, df.latitude), crs="EPSG:4326")
     # in case the coordinate system of the target variable product is not WGS 84, it is transformed to WGS 84
     if vector.crs != gdf.crs:
         vector.to_crs(gdf.crs, inplace=True)
@@ -128,8 +121,8 @@ def merge_vector_point(vector, df, columns):
 
 
 def extract_val(config, row, raster, bandname, latname, lonname, col_name, ts):
-    """In this function, raster values of a time-varying target variable are extracted at a specific well location.
-    The extracted values are appended to an output file.
+    """In this function, raster values of a time-varying target variable are extracted at
+    a specific well location. The extracted values are appended to an output file.
 
     config: configuration dictionary
     row: row of well dataframe with well coordinates (just one well)
@@ -141,33 +134,29 @@ def extract_val(config, row, raster, bandname, latname, lonname, col_name, ts):
     ts: the time dimension of the target variable in case the time could not be decoded in the xarray dataset
     """
     # xarray dataset is trimmed to the well location
-    extract = raster.sel(
-        {latname: row["latitude"], lonname: row["longitude"]}, method="nearest"
-    )
+    extract = raster.sel({latname: row["latitude"], lonname: row["longitude"]}, method="nearest")
 
     # create dataframe with ID, time column and extracted value/s
     # time is taken from the xarray dataset if not present as in NDVI or ISIMIP
     ts_df = pd.DataFrame(
         {
-            "ID": row["ID"],
+            "GROW_ID": row["GROW_ID"],
             "Time": ts or extract.time.values,
             "Interval": row["interval"],
             "Value": extract[bandname].values,
         }
     )
 
-    # cut time - to save storage, only time stamps that actually occur in the groundwater time series are kept in the dataframe
-    # substract one year from "starting_date" so that monthly or yearly products which start at the first day of the year/month are still included
-    starting_date = datetime.strptime(
-        row["starting_date"], "%Y-%m-%d"
-    ).date() - relativedelta(years=1)
-    # add one year to "ending_date" so that monthly or yearly products which end with the last day of the year/month are still included
-    ending_date = datetime.strptime(
-        row["ending_date"], "%Y-%m-%d"
-    ).date() + relativedelta(years=1)
-    ts_df = ts_df[
-        (ts_df.Time >= str(starting_date)) & (ts_df.Time <= str(ending_date))
-    ]  # trim time to relevant period
+    # cut time - to save storage, only time stamps that actually occur
+    # in the groundwater time series are kept in the dataframe
+    # substract one year from "starting_date" so that monthly or yearly products
+    # which start at the first day of the year/month are still included
+    starting_date = datetime.strptime(row["starting_date"], "%Y-%m-%d").date() - relativedelta(years=1)
+    # add one year to "ending_date" so that monthly or yearly products
+    # which end with the last day of the year/month are still included
+    ending_date = datetime.strptime(row["ending_date"], "%Y-%m-%d").date() + relativedelta(years=1)
+    # trim time to relevant period
+    ts_df = ts_df[(ts_df.Time >= str(starting_date)) & (ts_df.Time <= str(ending_date))]
 
     if ts_df.empty:
         # continue if time stamps is not relevant for well
@@ -217,12 +206,13 @@ def merge_raster_transient(
     era5: set to True if ERA5-Land data is extracted; longitude dimension needs to be adjusted + time dimension name must be renamed
     isimip: set to True if ISIMIP data is extracted; time can not be automatically decoded, an alternative is used
     """
-    # TODO DN: are any of the function parameters mutually exclusive?
+    # TODO DN: are any of the function parameters mutually exclusive? only ndvi, era5 and isimip
+    # patt2 and full are only needed for the gleam dataset
+    # transform is actually not needed with the current data but might be in the future
+    # the latname and lonname only deviate from default with ndvi=True | era5=True
 
     # Delete output file because results are appended and not overwritten
-    if os.path.isfile(
-        config["basepath"] + config["output"] + col_name + "_Extraction.txt"
-    ):
+    if os.path.isfile(config["basepath"] + config["output"] + col_name + "_Extraction.txt"):
         os.remove(config["basepath"] + config["output"] + col_name + "_Extraction.txt")
 
     # get paths of every file under that direction that contains specified string pattern
@@ -232,9 +222,8 @@ def merge_raster_transient(
     for file in rasterfiles:
         # import raster of target variable (and derive time dimension)
         if ndvi:
-            raster_nc = xr.open_dataset(
-                file, decode_times=False
-            )  # time cannot be decoded automatically
+            # time cannot be decoded automatically
+            raster_nc = xr.open_dataset(file, decode_times=False)
             # the newer ndvi raster contain a mask hiding invalid values
             # xarray is not properly reading this mask, consequently invalid values are not filtered
             # To filter them manually, the mask is read via the package netCDF4 and the invalid values are
@@ -242,13 +231,11 @@ def merge_raster_transient(
             raster_mask = Dataset(file)
             mask = raster_mask.variables[bandname][:].mask
             raster_nc[bandname].values[mask] = None
-            ts = datetime(
-                int(file[-27:-23]), int(file[-23:-21]), int(file[-21:-19])
-            )  # deriving time from file name
+            # deriving time from file name
+            ts = datetime(int(file[-27:-23]), int(file[-23:-21]), int(file[-21:-19]))
         elif isimip:
-            raster_nc = xr.open_dataset(
-                file, decode_times=False
-            )  # time cannot be decoded automatically
+            # time cannot be decoded automatically
+            raster_nc = xr.open_dataset(file, decode_times=False)
             # time dimension is always the same for ISIMIP data, 1901 - 2021 and has yearly resolution
             # generating time column, manually
             start_date = datetime(1901, 1, 1)
@@ -261,7 +248,8 @@ def merge_raster_transient(
                 # for ERA5-Land data the longitude dimension must be corrected from 0-360 to -180-180
                 raster_nc["longitude"] = ((raster_nc["longitude"] + 180) % 360) - 180
                 raster_nc = raster_nc.sortby("longitude")
-                # time dimension must be renamed because it is addressed with the name "time" for the rest of the function
+                # time dimension must be renamed because it is addressed with the name
+                # "time" for the rest of the function
                 raster_nc = raster_nc.rename({"valid_time": "time"})
 
         # Transform coordinate system if needed
@@ -278,7 +266,8 @@ def merge_raster_transient(
 
 
 def aggregate_merge(config, df, imp_name, i, exp_name, daily=False, yearly=False):
-    """In this function, the dataframes of the extracted time-varying target variables are imported, aggregated to the temporal resolution of the groundwater data
+    """In this function, the dataframes of the extracted time-varying target variables are imported,
+    aggregated to the temporal resolution of the groundwater data
     and merged to the groundwater time series table.
 
     config: configuration dictionary
@@ -300,16 +289,15 @@ def aggregate_merge(config, df, imp_name, i, exp_name, daily=False, yearly=False
         sep=";",
         header=None,
     )
-    raster.columns = ["ID", "time", "intervall", "Value"]  # set column names
-    raster.time = pd.to_datetime(
-        raster.time, format="ISO8601"
-    )  # generate datetime column
+    raster.columns = ["GROW_ID", "time", "interval", "Value"]  # set column names
+    raster.time = pd.to_datetime(raster.time, format="ISO8601")  # generate datetime column
 
     # snow_depth cannot be negative
     if imp_name == "snow_depth":
         raster.Value[raster.Value < 0] = 0
 
-    # create datetime column which shall be used to aggregate and merge the data; different datetime format dependent on temporal resolution of groundwater data
+    # create datetime column which shall be used to aggregate and merge the data;
+    # different datetime format dependent on temporal resolution of groundwater data
     raster["merge"] = None
 
     if yearly:
@@ -318,39 +306,45 @@ def aggregate_merge(config, df, imp_name, i, exp_name, daily=False, yearly=False
     elif not daily:
         # target variable has monthly resolution
         # data assigned to daily and monthly groundwater time series are aggregated to a monthly resolution
-        raster["merge"][(raster.intervall == "MS") | (raster.intervall == "d")] = (
-            pd.to_datetime(
-                raster["time"][(raster.intervall == "MS") | (raster.intervall == "d")]
-                .dt.to_period("M")
-                .astype(str),
-                format="%Y-%m",
-            )
+        raster["merge"][(raster.interval == "MS") | (raster.interval == "d")] = pd.to_datetime(
+            raster["time"][(raster.interval == "MS") | (raster.interval == "d")]
+            .dt.to_period("M")
+            .astype(str),
+            format="%Y-%m",
         )
         # data assigned to yearly groundwater time series are aggregated to a yearly resolution
-        raster["merge"][raster.intervall == "YS"] = pd.to_datetime(
-            raster["time"][raster.intervall == "YS"].dt.year.astype("int").astype(str),
+        raster["merge"][raster.interval == "YS"] = pd.to_datetime(
+            raster["time"][raster.interval == "YS"]
+            .dt.year.astype("int")
+            .astype(str),
             format="%Y",
         )
     else:
         # target variable has daily resolution
         # data is aggregated to the resolution of the assigned groundwater time series (daily, monthly and yearly)
-        raster["merge"][raster.intervall == "d"] = pd.to_datetime(
-            raster["time"][raster.intervall == "d"].dt.to_period("D").astype(str),
+        raster["merge"][raster.interval == "d"] = pd.to_datetime(
+            raster["time"][raster.interval == "d"]
+            .dt.to_period("D")
+            .astype(str),
             format="%Y-%m-%d",
         )
-        raster["merge"][raster.intervall == "MS"] = pd.to_datetime(
-            raster["time"][raster.intervall == "MS"].dt.to_period("M").astype(str),
+        raster["merge"][raster.interval == "MS"] = pd.to_datetime(
+            raster["time"][raster.interval == "MS"]
+            .dt.to_period("M")
+            .astype(str),
             format="%Y-%m",
         )
-        raster["merge"][raster.intervall == "YS"] = pd.to_datetime(
-            raster["time"][raster.intervall == "YS"].dt.year.astype("int").astype(str),
+        raster["merge"][raster.interval == "YS"] = pd.to_datetime(
+            raster["time"][raster.interval == "YS"]
+            .dt.year.astype("int")
+            .astype(str),
             format="%Y",
         )
 
     # aggregation to means
-    raster_agg = raster.groupby(["merge", "intervall", "ID"]).mean()
+    raster_agg = raster.groupby(["merge", "interval", "GROW_ID"]).mean()
     raster_agg.reset_index(inplace=True)
-    raster_agg.drop(["intervall", "time"], axis=1, inplace=True)
+    raster_agg.drop(["interval", "time"], axis=1, inplace=True)
 
     # merge target variable to groundwater time series
     # dependent on the temporal resolution of the target variable, another column in the groundwater data is used for the merge
@@ -360,8 +354,8 @@ def aggregate_merge(config, df, imp_name, i, exp_name, daily=False, yearly=False
             df,
             raster_agg,
             how="outer",
-            left_on=["year", "ID"],
-            right_on=["merge", "ID"],
+            left_on=["year", "GROW_ID"],
+            right_on=["merge", "GROW_ID"],
         )
     elif daily:
         # date: normal time stamp column
@@ -369,8 +363,8 @@ def aggregate_merge(config, df, imp_name, i, exp_name, daily=False, yearly=False
             df,
             raster_agg,
             how="outer",
-            left_on=["date", "ID"],
-            right_on=["merge", "ID"],
+            left_on=["date", "GROW_ID"],
+            right_on=["merge", "GROW_ID"],
         )
     else:
         # date2: here the daily data was trimmed to a monthly resolution (first day of a month)
@@ -378,13 +372,11 @@ def aggregate_merge(config, df, imp_name, i, exp_name, daily=False, yearly=False
             df,
             raster_agg,
             how="outer",
-            left_on=["date2", "ID"],
-            right_on=["merge", "ID"],
+            left_on=["date2", "GROW_ID"],
+            right_on=["merge", "GROW_ID"],
         )
 
     # Clean-up and export
     df_merged.drop(["merge"], axis=1, inplace=True)
     df_merged.rename(columns={"Value": imp_name}, inplace=True)
-    df_merged.to_csv(
-        config["basepath"] + config["output"] + exp_name + ".txt", sep=";", index=False
-    )
+    df_merged.to_csv(config["basepath"] + config["output"] + exp_name + ".txt", sep=";", index=False)

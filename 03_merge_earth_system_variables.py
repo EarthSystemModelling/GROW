@@ -31,9 +31,10 @@ from func_merge_earth_system_variables import (
 # Configuration: Path names, output names and other settings are defined here.
 config = {
     "basepath" : "/mnt/storage/grow/", # GROW project directory
-    "wells" : "01_Groundwater/02_Attributes/wells_attributes_V08.txt", # path to groundwater attributes table
-    "timeseries": "01_Groundwater/02_Timeseries/wells_timeseries_final_V08.txt", # path to groundwater time series table
+    "wells" : "01_Groundwater/02_Attributes/wells_attributes", # path to groundwater attributes table
+    "timeseries": "01_Groundwater/02_Timeseries/wells_timeseries_final", # path to groundwater time series table
     # paths to original data of Earth system variables; path to file for static variables; path to folder containing files for time series variables
+    "version": "V08_small",
     "factors": {"dem": "04_Geosphere/Topography/MERIT_DEM/MERIT/MERIT_DEM.tif",
                 "slope": "04_Geosphere/Topography/Slope_MERIT_DEM/dtm_slope_merit.dem_m_250m_s0..0cm_2018_v1.0.tif",
                 "glim":{"data":'04_Geosphere/GLiM/glim_wgs84_0point5deg.txt.asc',"codes":"Soils_Geology/GLiM/Classnames.txt"},
@@ -64,10 +65,14 @@ config = {
                 "lu_urban": "08_Anthroposhere/Land_use/urban",
                 "soil_texture": {"data":"04_Geosphere/HiHydroKlass/STC","codes":"04_Geosphere/HiHydroKlass/STC/stc_codes.txt"},
                 "soil_kat": "04_Geosphere/HiHydroKlass/Ksat"},
-    "output": "01_Groundwater/GROW_merge_V08/", # folder in which the interim output files are exported
+    "output": "01_Groundwater/GROW_merge_V08_small/", # folder in which the interim output files are exported
     # names of final GROW tables
-    "output_tables": {"att":"09_final_grow/V07/grow_attributes_without_lu.csv","att_full":"09_final_grow/V07/grow_attributes.csv",
-                      "att_geo":"09_final_grow/V07/grow_attributes.json", "ts": "09_final_grow/V07/grow_timeseries.csv"},
+    "output_tables": {
+        "att": "09_final_grow/V08_small/grow_attributes_without_lu.csv",
+        "att_full": "09_final_grow/V08_small/grow_attributes.csv",
+        "att_geo": "09_final_grow/V08_small/grow_attributes.json",
+        "ts": "09_final_grow/V08_small/grow_timeseries.csv",
+    },
     # With modules, the processing of all static variables, all time series variables or single variables can be enabled (True) or disabled (False)
     "modules": {
         "gk": True,
@@ -103,8 +108,8 @@ config = {
 warnings.filterwarnings("ignore")
 
 ## Earth system attributes: static
-
-wells = pd.read_csv(config["basepath"] + config["wells"], sep=";") # import groundwater attributes table
+# import groundwater attributes table
+wells = pd.read_csv(config["basepath"] + config["wells"] + config["version"] + ".txt", sep=";")
 
 if config["modules"]["static"]:
     """Consecutively, the 17 static variables are merged to the groundwater table."""
@@ -585,7 +590,7 @@ if config["modules"]["timeseries"]:
         )
 
     # Load full groundwater time series table
-    ts = pd.read_csv(config["basepath"] + config["timeseries"], sep=";")
+    ts = pd.read_csv(config["basepath"] + config["timeseries"] + config["version"] + ".txt", sep=";")
     ts.date = pd.to_datetime(ts.date, format="ISO8601")  # convert date column
     ts.date2 = pd.to_datetime(ts.date2, format="ISO8601")  # convert second date column
 

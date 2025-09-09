@@ -29,7 +29,7 @@ config = {
     "wells": "01_IGRAC_data_2025_08_18", # folder in which IGRAC's groundwater data is located
     "country_name_pos": 58, # position of first country letter in file path to extract country information
     # paths of exported output files
-    "output": {"name":"_V08", # name of version
+    "output": {"name":"_V08_small", # name of version
                "data":"02_Timeseries/wells_timeseries",
                "ts_attributes": "02_Timeseries/wells_timeseries_attributes",
                "max_dist": "02_Statistics/max_distance",
@@ -46,7 +46,7 @@ config = {
                "par": "02_Timeseries/wells_mul_par_all",
                "lost_per": "02_Statistics/wells_timeseries_drops",
                "duration": "GGMN_preprocessing_duration.txt"},
-    "small": False # If True, only 1/5 of the data is processed to create a smaller test dataset
+    "small": True # If True, only 1/50 of the data is processed to create a smaller test dataset
 }
 
 # Constants for temporal classification
@@ -108,7 +108,7 @@ for path in full_path:
                 txt_files.append(os.path.join(root, file))
 
     if config["small"]:
-        txt_files = [txt_files[i] for i in range(0, len(txt_files), 5)]
+        txt_files = [txt_files[i] for i in range(0, len(txt_files), 50)]
 
     # loop over every well
     for file in txt_files:
@@ -164,9 +164,9 @@ for path in full_path:
             if (raw.Value < 0).all():  # all records are negative
                 outliers_depth_all = outliers_depth_all + [raw.copy(deep=True)]
                 raw.Value = raw.Value * (-1)  # when all values are negative, we just need a sign switch
-        #    elif (raw.Value < 0).any():  # only some records are negative
-        #        outliers_depth_any = outliers_depth_any + [raw]
-        #        raw = raw.drop(raw[raw.Value < 0].index).reset_index(drop=True) # they are dropped
+            elif (raw.Value < 0).any():  # only some records are negative
+                outliers_depth_any = outliers_depth_any + [raw]
+                raw = raw.drop(raw[raw.Value < 0].index).reset_index(drop=True) # they are dropped
         ### Remove groundwater level records that are -999 or -9999
         else:
             if ((raw.Value == -999).any()) | ((raw.Value == -9999).any()):
@@ -401,7 +401,7 @@ for path in full_path:
                 "aggregated_from_n_values_median": [
                     raw5.aggregated_from_n_values.median()
                 ],
-                "gap_fraction ": [gap_amount],
+                "gap_fraction": [gap_amount],
                 "jumps": jumps,
                 "plateaus": [plat],
                 "trend_direction": [trend],
@@ -482,7 +482,7 @@ for path in full_path:
                 header=False,
             )
 
-# export fractions of lost time series per time step and outliers
+# export fractions of time series that were dropped or that contain anomalies (outliers)
 drops = pd.DataFrame(
     {
         "name": [
@@ -541,93 +541,28 @@ drops.to_csv(
     sep=";",
 )
 
-# export time series that were dropped
-pd.concat(data_lost_a).to_csv(
-    config["basepath"]
-    + config["output"]["lost_<2_records"]
-    + config["output"]["name"]
-    + ".txt",
-    index=False,
-    sep=";",
-)
-pd.concat(data_lost_b).to_csv(
-    config["basepath"]
-    + config["output"]["lost_mul_par"]
-    + config["output"]["name"]
-    + ".txt",
-    index=False,
-    sep=";",
-)
-pd.concat(data_lost_c).to_csv(
-    config["basepath"]
-    + config["output"]["lost_unrealistic_value"]
-    + config["output"]["name"]
-    + ".txt",
-    index=False,
-    sep=";",
-)
-pd.concat(data_lost_d).to_csv(
-    config["basepath"]
-    + config["output"]["lost_after_aggregation"]
-    + config["output"]["name"]
-    + ".txt",
-    index=False,
-    sep=";",
-)
-pd.concat(data_lost_e).to_csv(
-    config["basepath"]
-    + config["output"]["lost_gap_length"]
-    + config["output"]["name"]
-    + ".txt",
-    index=False,
-    sep=";",
-)
-pd.concat(data_lost_f).to_csv(
-    config["basepath"]
-    + config["output"]["lost_gap_amount"]
-    + config["output"]["name"]
-    + ".txt",
-    index=False,
-    sep=";",
-)
+# export time series that were dropped and time series with anomalies (outliers)
+lists = [data_lost_a,data_lost_b,data_lost_c,data_lost_d,data_lost_e,
+         data_lost_f,outliers_plateaus,outliers_jumps,outliers_depth_all,
+         outliers_depth_any,outliers_parameter]
+paths = ["lost_<2_records","lost_mul_par","lost_unrealistic_value","lost_after_aggregation","lost_gap_length",
+         "lost_gap_amount","plateau","jumps","depth_all",
+         "depth_any","par"]
 
-# export time series that were flagged our that contain suspicious outliers
-pd.concat(outliers_plateaus).to_csv(
-    config["basepath"]
-    + config["output"]["plateau"]
-    + config["output"]["name"]
-    + ".txt",
-    index=False,
-    sep=";",
-)
-pd.concat(outliers_jumps).to_csv(
-    config["basepath"] + config["output"]["jumps"] + config["output"]["name"] + ".txt",
-    index=False,
-    sep=";",
-)
-pd.concat(outliers_depth_all).to_csv(
-    config["basepath"]
-    + config["output"]["depth_all"]
-    + config["output"]["name"]
-    + ".txt",
-    index=False,
-    sep=";",
-)
-pd.concat(outliers_depth_any).to_csv(
-    config["basepath"]
-    + config["output"]["depth_any"]
-    + config["output"]["name"]
-    + ".txt",
-    index=False,
-    sep=";",
-)
-pd.concat(outliers_parameter).to_csv(
-    config["basepath"] + config["output"]["par"] + config["output"]["name"] + ".txt",
-    index=False,
-    sep=";",
-)
+for li,pa in zip(lists,paths):
+    try:
+        pd.concat(li).to_csv(
+            config["basepath"]
+            + config["output"][pa]
+            + config["output"]["name"]
+            + ".txt",
+            index=False,
+            sep=";",
+        )
+    except ValueError: # in case the list is empty
+        pass
 
-# Print duration of scripts
+# Print duration of script
 np.savetxt(
     config["basepath"]
     + config["output"]["duration"]
