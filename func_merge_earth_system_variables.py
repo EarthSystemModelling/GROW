@@ -1,5 +1,5 @@
 """This file contains all functions that are used in "03_merge_earth_system_variables.py"."""
-#
+
 # import packages
 from datetime import datetime
 from dateutil.relativedelta import relativedelta  # built-in package

@@ -1,5 +1,5 @@
 ### usage_example
-#
+
 """This is an example showing how GROW can be easily subset for specific needs. In this example, we might want to investigate
 the seasonal pattern of groundwater observations in Brazil. For that, we need to 1.) extract monthly groundwater time series from Brazil,
 2.) aggregate the time series and 3.) adjust the units."""

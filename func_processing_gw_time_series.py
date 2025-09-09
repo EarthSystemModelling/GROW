@@ -1,7 +1,7 @@
 ## func_processing_gw_time_series
 
 """This file contains all functions that are used in "01_processing_gw_time_series.py"."""
-#
+
 # import packages
 import pandas as pd  # imported version: 2.2.3
 import numpy as np  # imported version: 2.2.4
