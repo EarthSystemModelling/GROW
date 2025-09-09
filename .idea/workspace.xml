@@ -4,11 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7e7c1e35-bec7-4800-af78-7f27bab9c640" name="Changes" comment="add logo">
-      <change beforePath="$PROJECT_DIR$/.idea/deployment.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/02_processing_gw_attributes.py" beforeDir="false" afterPath="$PROJECT_DIR$/02_processing_gw_attributes.py" afterDir="false" />
-    </list>
+    <list default="true" id="7e7c1e35-bec7-4800-af78-7f27bab9c640" name="Changes" comment="test" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -280,10 +276,10 @@
     <MESSAGE value="initial" />
     <MESSAGE value="initial commit" />
     <MESSAGE value="Initial commit" />
-    <MESSAGE value="test" />
     <MESSAGE value="add logo" />
     <MESSAGE value="deployment path changed" />
-    <option name="LAST_COMMIT_MESSAGE" value="deployment path changed" />
+    <MESSAGE value="test" />
+    <option name="LAST_COMMIT_MESSAGE" value="test" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
