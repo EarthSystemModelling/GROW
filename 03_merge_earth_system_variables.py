@@ -30,65 +30,44 @@ from func_merge_earth_system_variables import (
 
 # Configuration: Path names, output names and other settings are defined here.
 config = {
-    "basepath": "/mnt/storage/grow/",  # GROW project directory
-    "wells": "Groundwater/02_Attributes/wells_attributes_V07.txt",  # path to groundwater attributes table
-    "timeseries": "Groundwater/02_Timeseries/wells_timeseries_final_V07.txt",  # path to groundwater time series table
+    "basepath" : "/mnt/storage/grow/", # GROW project directory
+    "wells" : "01_Groundwater/02_Attributes/wells_attributes_V08.txt", # path to groundwater attributes table
+    "timeseries": "01_Groundwater/02_Timeseries/wells_timeseries_final_V08.txt", # path to groundwater time series table
     # paths to original data of Earth system variables; path to file for static variables; path to folder containing files for time series variables
-    "factors": {
-        "dem": "Topography/MERIT_DEM/MERIT/MERIT_DEM.tif",
-        "slope": "Topography/Slope_MERIT_DEM/dtm_slope_merit.dem_m_250m_s0..0cm_2018_v1.0.tif",
-        "glim": {
-            "data": "Soils_Geology/GLiM/glim_wgs84_0point5deg.txt.asc",
-            "codes": "Soils_Geology/GLiM/Classnames.txt",
-        },
-        "permeability": "Soils_Geology/GLYHMPS2.0/GLHYMPS.shp",
-        "porosity": "Soils_Geology/GLHYMPS/GLHYMPS/GLHYMPS.gdb/a00000009.gdbtable",
-        "glacier_permafrost": "HydroAtlas/BasinATLAS_v10_shp/BasinATLAS_v10_lev12.shp",
-        "whymap": "Soils_Geology/WHYMAP/WHYMAP_WOKAM/shp/whymap_karst__v1_poly.shp",
-        "ggde": {
-            "data": "Vegetation/GGDE/Huggins/gde-map.tif",
-            "codes": "Vegetation/GGDE/Huggins/GGDE_names.txt",
-        },
-        "basins": "HydroAtlas/BasinATLAS_v10_shp/BasinATLAS_v10_lev09.shp",
-        "rivers": "HydroAtlas/HydroRIVERS_v10_shp/HydroRIVERS_v10.shp",
-        "drain_den": "HydroAtlas/Drainage_density.shp",
-        "mswep": "Climate/Precipitation/MSWEP/Selection",
-        "gpcc": "Climate/Precipitation/GPCC/",
-        "gleam": "Climate/GLEAM/daily_4_1a",
-        "hydrobelts": {
-            "data": "Climate/Hydroregions/meybeck_et_al_2013_hydrobelts_shp/meybeck_et_al_2013_hydrobelts.shp",
-            "codes": "Climate/Hydroregions/hydrobelts_codes_reduced.txt",
-        },
-        "gk": {
-            "data": "Climate/Climate_zones/CHELSA_kg0_1981-2010_V.2.1.tif",
-            "codes": "Climate/Climate_zones/kg0_names.txt",
-        },
-        "abstract_ind": "Humankind/Abstraction/ISIMIP_industrial",
-        "abstract_dom": "Humankind/Abstraction/ISIMIP_domestic",
-        "ndvi": "Vegetation/NDVI/access",
-        "pet": "Climate/ERA5-Land_daily/PET",
-        "temperature": "Climate/ERA5-Land_daily/Temperature",
-        "snow_depth": "Climate/ERA5-Land_daily/Snow",
-        "LAI_low": "Climate/ERA5-Land_daily/LAI_low",
-        "LAI_high": "Climate/ERA5-Land_daily/LAI_high",
-        "dist_streams": "Surface_Waters/Distance_perennial_streams/L01_m.tiff",
-        "gw_scapes": "Humankind/Groundwaterscapes/groundwaterscapes.tif",
-        "lu_totals": "Humankind/Land_use/totals",
-        "lu_urban": "Humankind/Land_use/urban",
-        "soil_texture": {
-            "data": "Soils_Geology/HiHydroKlass/STC",
-            "codes": "Soils_Geology/HiHydroKlass/STC/stc_codes.txt",
-        },
-        "soil_kat": "Soils_Geology/HiHydroKlass/Ksat",
-    },
-    "output": "Groundwater/GROW_merge_V07/",  # folder in which the interim output files are exported
+    "factors": {"dem": "04_Geosphere/Topography/MERIT_DEM/MERIT/MERIT_DEM.tif",
+                "slope": "04_Geosphere/Topography/Slope_MERIT_DEM/dtm_slope_merit.dem_m_250m_s0..0cm_2018_v1.0.tif",
+                "glim":{"data":'04_Geosphere/GLiM/glim_wgs84_0point5deg.txt.asc',"codes":"Soils_Geology/GLiM/Classnames.txt"},
+                "permeability":"04_Geosphere/GLYHMPS2.0/GLHYMPS.shp",
+                "porosity":"04_Geosphere/GLHYMPS/GLHYMPS/GLHYMPS.gdb/a00000009.gdbtable",
+                "glacier_permafrost":"02_HydroAtlas/BasinATLAS_v10_shp/BasinATLAS_v10_lev12.shp",
+                "whymap": "04_Geosphere/WHYMAP/WHYMAP_WOKAM/shp/whymap_karst__v1_poly.shp",
+                "ggde": {"data":"07_Biosphere/GGDE/Huggins/gde-map.tif","codes":"07_Biosphere/GGDE/Huggins/GGDE_names.txt"},
+                "basins": "02_HydroAtlas/BasinATLAS_v10_shp/BasinATLAS_v10_lev09.shp",
+                "rivers": "02_HydroAtlas/HydroRIVERS_v10_shp/HydroRIVERS_v10.shp",
+                "drain_den": "02_HydroAtlas/Drainage_density.shp",
+                "mswep": "03_Atmosphere/Precipitation/MSWEP/Selection",
+                "gpcc": "03_Atmosphere/Precipitation/GPCC/",
+                "gleam": "03_Atmosphere/GLEAM/daily_4_1a",
+                "hydrobelts": {"data":"03_Atmosphere/Hydroregions/meybeck_et_al_2013_hydrobelts_shp/meybeck_et_al_2013_hydrobelts.shp", "codes":"Climate/Hydroregions/hydrobelts_codes_reduced.txt"},
+                "gk": {"data": "03_Atmosphere/Climate_zones/CHELSA_kg0_1981-2010_V.2.1.tif", "codes": "Climate/Climate_zones/kg0_names.txt"},
+                "abstract_ind": "Humankind/Abstraction/ISIMIP_industrial",
+                "abstract_dom": "Humankind/Abstraction/ISIMIP_domestic",
+                "ndvi": "07_Biosphere/NDVI/access",
+                "pet": "03_Atmosphere/ERA5-Land_daily/PET",
+                "temperature": "03_Atmosphere/ERA5-Land_daily/Temperature",
+                "snow_depth": "03_Atmosphere/ERA5-Land_daily/Snow",
+                "LAI_low" :"03_Atmosphere/ERA5-Land_daily/LAI_low",
+                "LAI_high" :"03_Atmosphere/ERA5-Land_daily/LAI_high",
+                "dist_streams": "05_Hydrosphere/Distance_perennial_streams/L01_m.tiff",
+                "gw_scapes": "08_Anthroposhere/Groundwaterscapes/groundwaterscapes.tif",
+                "lu_totals": "08_Anthroposhere/Land_use/totals",
+                "lu_urban": "08_Anthroposhere/Land_use/urban",
+                "soil_texture": {"data":"04_Geosphere/HiHydroKlass/STC","codes":"04_Geosphere/HiHydroKlass/STC/stc_codes.txt"},
+                "soil_kat": "04_Geosphere/HiHydroKlass/Ksat"},
+    "output": "01_Groundwater/GROW_merge_V08/", # folder in which the interim output files are exported
     # names of final GROW tables
-    "output_tables": {
-        "att": "final_grow/V07/grow_attributes_without_lu.csv",
-        "att_full": "final_grow/V07/grow_attributes.csv",
-        "att_geo": "final_grow/V07/grow_attributes.json",
-        "ts": "final_grow/V07/grow_timeseries.csv",
-    },
+    "output_tables": {"att":"09_final_grow/V07/grow_attributes_without_lu.csv","att_full":"09_final_grow/V07/grow_attributes.csv",
+                      "att_geo":"09_final_grow/V07/grow_attributes.json", "ts": "09_final_grow/V07/grow_timeseries.csv"},
     # With modules, the processing of all static variables, all time series variables or single variables can be enabled (True) or disabled (False)
     "modules": {
         "gk": True,
@@ -125,9 +104,7 @@ warnings.filterwarnings("ignore")
 
 ## Earth system attributes: static
 
-wells = pd.read_csv(
-    config["basepath"] + config["wells"], sep=";"
-)  # import groundwater attributes table
+wells = pd.read_csv(config["basepath"] + config["wells"], sep=";") # import groundwater attributes table
 
 if config["modules"]["static"]:
     """Consecutively, the 17 static variables are merged to the groundwater table."""
@@ -314,7 +291,7 @@ if config["modules"]["static"]:
         drain_den = gpd.read_file(config["basepath"] + config["factors"]["drain_den"])
         wells = merge_vector_point(drain_den, wells, ["Drainage_d"])
         wells = wells.drop_duplicates(
-            subset="ID"
+            subset="GROW_ID"
         )  # some duplicates were created in merge_vector_point which are removed here
         wells.rename(columns={"Drainage_d": "drainage_density_m-1"}, inplace=True)
 
@@ -325,7 +302,7 @@ if config["modules"]["static"]:
         )
         wells = merge_vector_point(basins, wells, ["gla_pc_use", "prm_pc_use"])
         wells = wells.drop_duplicates(
-            subset="ID"
+            subset="GROW_ID"
         )  # some duplicates were created in merge_vector_point which are removed here
         wells["gla_pc_use"] = wells["gla_pc_use"] / 100  # from percentage to fraction
         wells["prm_pc_use"] = wells["prm_pc_use"] / 100  # from percentage to fraction

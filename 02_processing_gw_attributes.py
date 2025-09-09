@@ -12,22 +12,22 @@ import pandas as pd  # imported version: 2.2.3
 
 # Configuration: Path names, output names and other settings are defined here.
 config = {
-    "basepath": "/mnt/storage/grow/Groundwater/",  # GROW project directory for groundwater data
-    "wells": "01_IGRAC_data_2024_06_x",  # folder in which IGRAC's groundwater data is located
-    "timeseries_att": "02_Timeseries/wells_timeseries_attributes_V07.txt",  # time series attributes derived in "01_processing_gw_time_series"
-    "timeseries": "02_Timeseries/wells_timeseries_V07.txt",  # time series table derived in "01_processing_gw_time_series"
+    "basepath" : "/mnt/storage/grow/01_Groundwater/", # GROW project directory for groundwater data
+    "wells": "01_IGRAC_data_2025_08_18", # folder in which IGRAC's groundwater data is located
+    "timeseries_att": "02_Timeseries/wells_timeseries_attributes_V08.txt", # time series attributes derived in "01_processing_gw_time_series"
+    "timeseries" : "02_Timeseries/wells_timeseries_V08.txt", # time series table derived in "01_processing_gw_time_series"
     # paths of exported output files
-    "output": {
-        "name": "_V07",  # name of version
-        "all": "02_Attributes/wells_attributes_all.csv",
-        "all_dups": "02_Attributes/wells_attributes_all_dups.txt",
-        "filtered": "02_Attributes/wells_attributes",
-        "drops": "02_Statistics/wells_attributes_drops",
-        "new_ts": "02_Timeseries/wells_timeseries_final",
-        "coor": "02_Attributes/wells_wrong_coordinates",
-        "id": "02_Attributes/wells_dup_id",
-        "duploc": "02_Attributes/wells_duplicate_loc_time",
-    },
+    "output": {"name": "_V08", # name of version
+               "all":"02_Attributes/wells_attributes_all.csv",
+               "all_dups": "02_Attributes/wells_attributes_all_dups.txt",
+               "all_unprocessed": "02_Attributes/wells_attributes_all_unprocessed.csv",
+               "filtered": "02_Attributes/wells_attributes",
+               "drops": "02_Statistics/wells_attributes_drops",
+               "new_ts": "02_Timeseries/wells_timeseries_final",
+               "coor": "02_Attributes/wells_wrong_coordinates",
+               "id": "02_Attributes/wells_dup_id",
+               "duploc": "02_Attributes/wells_duplicate_loc_time",
+               },
 }
 
 ## Merge all attributes excel files and sheets together to one large attributes table and discard "ID" and "Country" duplicates
@@ -40,95 +40,46 @@ folders = os.listdir(
 
 wells = []
 wells_drop = []  # to store discarded well duplicates
+all_wells = [] # to merge all unprocessed attribute tables
 total_number = 0  # to count all wells
 all_kept = 0  # to count all kept wells
 
 # loop over every country folder
 for fold in folders:
     # Import well.xlsx table
-    file = config["basepath"] + config["wells"] + "/" + fold + "/" + "wells.xlsx"
+    file = config["basepath"] + config["wells"] + "/" + fold + "/" + "wells.ods"
     # "General Information" sheet in wells.xlsx
-    well = pd.read_excel(
-        file, engine="openpyxl", sheet_name=0, skiprows=[1, 1], dtype={"ID": object}
-    )
-    well.rename(
-        columns={
-            "Ground surface elevation\n": "surface_elevation_m",
-            "Top of well elevation": "top_of_well_elevation_m",
-            "Unnamed: 15": "License_restriction",
-        },
-        inplace=True,
-    )  # rename some columns
-    well.loc[well["Unnamed: 9"] == "ft", "surface_elevation_m"] = (
-        well.loc[well["Unnamed: 9"] == "ft", "surface_elevation_m"] * 0.3048
-    )  # convert all feet values to meter
-    well.loc[well["Unnamed: 11"] == "ft", "top_of_well_elevation_m"] = (
-        well.loc[well["Unnamed: 11"] == "ft", "top_of_well_elevation_m"] * 0.3048
-    )  # convert all feet values to meter
-    well.drop(
-        ["Unnamed: 9", "Unnamed: 11"], axis=1, inplace=True
-    )  # remove unit column because everything is in meter now
+    well = pd.read_excel(file, engine='odf', sheet_name=0, skiprows= [1,1], dtype={"ID":object})
+    all_wells.append(well)
+    total_number = total_number + len(well)  # to count all existing wells in the dataset
+    well.rename(columns={"Ground surface elevation": "provider_elevation_m","DEM elevation based on the GLO_90m dataset":"GLO_90m_elevation_m",
+                         "Top of well elevation": "top_of_well_elevation_m","Unnamed: 17":"License_restriction",
+                         "Measurement Type": "groundwater_level", "Unnamed: 19": "groundwater_quality",
+                         "Measurement Data":"first_date_of_measurement", "Unnamed: 21":"last_date_of_measurement"},inplace=True)  # rename some columns
+    well.loc[well["Unnamed: 9"] == "ft", "provider_elevation_m"] = well.loc[well["Unnamed: 9"] == "ft", "provider_elevation_m"] * 0.3048  # convert all feet values to meter
+    well.loc[well["Unnamed: 11"] == "ft", "GLO_90m_elevation_m"] = well.loc[well["Unnamed: 11"] == "ft", "GLO_90m_elevation_m"] * 0.3048  # convert all feet values to meter
+    well.loc[well["Unnamed: 13"] == "ft", "top_of_well_elevation_m"] = well.loc[well["Unnamed: 13"] == "ft", "top_of_well_elevation_m"] * 0.3048  # convert all feet values to meter
+    well.drop(["Unnamed: 9","Unnamed: 11","Unnamed: 13"], axis=1, inplace=True)  # remove unit column because everything is in meter now
     # "Hydrogeology" sheet in wells.xlsx
-    hydrogeo = pd.read_excel(
-        file, engine="openpyxl", sheet_name=1, skiprows=[1, 1], dtype={"ID": object}
-    )
-    hydrogeo.rename(
-        columns={
-            "Unnamed: 9": "Unit_HC",
-            "Unnamed: 11": "Unit_T",
-            "Unnamed: 13": "Unit_Sp",
-            "Unnamed: 15": "Unit_SC",
-            "Unnamed: 17": "Unit_St",
-        },
-        inplace=True,
-    )
+    hydrogeo = pd.read_excel(file, engine='odf', sheet_name=1, skiprows=[1, 1], dtype={"ID":object})
+    hydrogeo.rename(columns={"Unnamed: 10": "Unit_HC", "Unnamed: 12": "Unit_T", "Unnamed: 14": "Unit_Sp",
+                                 "Unnamed: 16": "Unit_SC", "Unnamed: 18":"Unit_St"},inplace=True)
     # "Management" sheet in wells.xlsx
-    man = pd.read_excel(
-        file, engine="openpyxl", sheet_name=2, skiprows=[1, 1], dtype={"ID": object}
-    )
-    man.rename(
-        columns={
-            "Unnamed: 2": "Manager",
-            "Unnamed: 3": "Org_description",
-            "License": "Lic_Name",
-            "Unnamed: 7": "Lic_validfrom",
-            "Unnamed: 8": "Lic_validtil",
-            "Unnamed: 9": "Lic_description",
-        },
-        inplace=True,
-    )
-    # "Drilling and Construction" sheet in drilling_and_construction.xlsx; Other sheets in this file contain almost no information (1-2 wells with entries which are test entries)
-    file = (
-        config["basepath"]
-        + config["wells"]
-        + "/"
-        + fold
-        + "/"
-        + "drilling_and_construction.xlsx"
-    )
-    construction = pd.read_excel(
-        file, engine="openpyxl", sheet_name=0, skiprows=[1, 1], dtype={"ID": object}
-    )
-    construction.rename(
-        columns={
-            "Pump": "Pump_installer",
-            "Unnamed: 9": "Pump_description",
-            " Total depth": "drilling_total_depth_m",
-        },
-        inplace=True,
-    )
-    # unit is meters anyway and year of drilling is only provided for 12 wells, both are dropped to keep the table as small as possible
-    construction.drop(
-        columns=["Unit", "Year of drilling"], inplace=True, errors="ignore"
-    )
+    man = pd.read_excel(file, engine='odf', sheet_name=2, skiprows=[1, 1], dtype={"ID":object})
+    man.rename(columns={"Unnamed: 3":"manager","Unnamed: 4":"org_description","License":"lic_Name",
+                            "Unnamed: 8": "lic_validfrom","Unnamed: 9": "lic_validtil", "Unnamed: 10": "lic_description"}, inplace=True)
+    # "Drilling and Construction" sheet in drilling_and_construction.ods; Other sheets in this file contain almost no information (1-2 wells with entries which are test entries)
+    file = config["basepath"] + config["wells"] + "/" + fold + "/" + "drilling_and_construction.ods"
+    construction = pd.read_excel(file, engine='odf', sheet_name=0, skiprows=[1, 1], dtype={"ID":object})
+    construction.rename(columns={"Pump":"pump_installer","Unnamed: 10":"pump_description"," Total depth": "drilling_total_depth_m"},inplace=True)
+    construction.loc[construction["Unit"] == "ft", "drilling_total_depth_m"] = construction.loc[construction["Unit"] == "ft", "drilling_total_depth_m"] * 0.3048  # convert all feet values to meter
+    construction.drop(columns={"Unit","Year of drilling"},inplace=True) # unit is meters anyway and year of drilling is only provided for 12 wells, both are dropped to keep the table as small as possible
     # merge all attributes tables together
     well_mer1 = pd.merge(well, hydrogeo, on="ID", how="left")
     well_mer2 = pd.merge(well_mer1, man, on="ID", how="left")
     well_full = pd.merge(well_mer2, construction, on="ID", how="left")
     # drop full duplicates and duplicates by ID and country
     well_full = well_full.drop_duplicates()
-    total_number = total_number + len(well_full)
-    # get duplicates by ID for further processing
     subset = well_full[well_full.duplicated(subset=["ID"], keep=False)]
     if not subset.empty:
         # we know that some duplicates are created because records from the Jasechko et al. (2024) study and G3P campaign are duplicates
@@ -143,9 +94,7 @@ for fold in folders:
         # drop rows based on organisation
         well_full = well_full.drop(index=excluded_indices, errors="ignore")
         # drop rows based on description
-        well_full = well_full.drop(
-            subset[subset["Description"].str.contains("G3P", na=False)]
-        )
+        well_full = well_full.drop(subset[subset["Description"].str.contains("G3P", na=False)])
 
     # Drop all remaining duplicates as we can't determine which one to keep
     well_full = well_full.drop_duplicates(subset=["ID"], keep=False)
@@ -170,7 +119,7 @@ all_wells = pd.read_csv(
 )  # import attributes table
 all_wells.columns = all_wells.columns.str.lower()  # lowercase all column names
 all_wells.rename(columns={"id": "ID"}, inplace=True)  # rename ID column again
-len_all = 221123  # total amount of time series after preprocessing in "01_processing_gw_time_series.py"; to calculate percentage loss per processing step
+len_all = 251398  # total amount of time series after preprocessing in "01_processing_gw_time_series.py"; to calculate percentage loss per processing step
 
 # Merge attributes table with time series attributes by ID and Country
 wells_timeseries_attributes = pd.read_csv(
@@ -233,26 +182,23 @@ lost_wrong_coordinates = len(wells_drop_dup) - len(
 )  # number of lost time series due to wrong coordinates
 
 # make everything clean and tidy
-wells_filt.rename(
-    columns={"ID": "original_ID_groundwater"}, inplace=True
-)  # rename ID column
-wells_filt.dropna(axis=1, how="all", inplace=True)  # drop completely empty columns
-wells_filt = wells_filt[
-    wells_filt.original_ID_groundwater != "whostest123"
-]  # test entries by IGRAC are removed
-wells_filt = wells_filt.dropna(axis=1, how="all")  # drop all empty columns
+wells_filt.rename(columns={"ID": "original_ID_groundwater","name ":"name", "aquifer name": "aquifer_name", "feature type": "feature_type"}, inplace=True)  # rename ID column
+wells_filt = wells_filt[wells_filt.original_ID_groundwater!="whostest123"] # test entries by IGRAC are removed
+wells_filt = wells_filt.dropna(axis=1, how='all') # drop all empty columns
+wells_filt.drop(columns=["glo_90m_elevation_m",'groundwater_level', 'groundwater_quality','first_date_of_measurement', 'last_date_of_measurement','aquifer type'],inplace=True) # columns that are not wanted in GROW
+if len(set(wells_filt["license_restriction"]))<2: # is interesting but only if there is more information than "-"
+    wells_filt.drop(columns=["license_restriction"], inplace=True)
+wells_filt.insert(29, "reference_point", wells_filt.pop('reference_point'))
 
 # add unique GROW ID
 wells_filt.reset_index(inplace=True, drop=True)
-wells_filt["ID"] = None
+wells_filt["GROW_ID"] = None
 for i in range(len(wells_filt)):
-    wells_filt.loc[i, "ID"] = (
-        f"GROW-{str(int(time.process_time_ns()))}"  # "GROW-" + a timestamp is used as ID
-    )
+    wells_filt.loc[i,"GROW_ID"] = f"GROW-{str(int(time.process_time_ns()))}" # "GROW-" + a timestamp is used as ID
 
 # change position of ID column
-growid = wells_filt.pop("ID")
-wells_filt.insert(0, "ID", growid)
+growid = wells_filt.pop('GROW_ID')
+wells_filt.insert(0, 'GROW_ID', growid)
 
 # export groundwater attributes table
 wells_filt.to_csv(
@@ -307,16 +253,16 @@ timeseries.ID = timeseries.ID.astype("str")  # so that the merge works
 # merge with GROW-ID by old_ID and Country
 timeseries_trimmed = pd.merge(
     timeseries,
-    wells_filt[["ID", "original_ID_groundwater", "country"]],
+    wells_filt[["GROW_ID", "original_ID_groundwater", "country"]],
     left_on=["ID", "country"],
     right_on=["original_ID_groundwater", "country"],
     how="inner",
 )
-timeseries_trimmed.drop(["original_ID_groundwater", "ID_x"], axis=1, inplace=True)
+timeseries_trimmed.drop(["original_ID_groundwater", "ID"], axis=1, inplace=True)
 
 # make new ID column first column
-growid = timeseries_trimmed.pop("ID_y")
-timeseries_trimmed.insert(0, "ID", growid)
+growid = timeseries_trimmed.pop('GROW_ID')
+timeseries_trimmed.insert(0, 'GROW_ID', growid)
 
 # make three separate columns for groundwater depth [from ground /from top of the well] and groundwater level
 par_sep = timeseries_trimmed.pivot(
