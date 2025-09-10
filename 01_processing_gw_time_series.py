@@ -29,7 +29,7 @@ config = {
     "wells": "01_IGRAC_data_2025_08_18", # folder in which IGRAC's groundwater data is located
     "country_name_pos": 58, # position of first country letter in file path to extract country information
     # paths of exported output files
-    "output": {"name":"_V08_small", # name of version
+    "output": {"name":"_V08", # name of version
                "data":"02_Timeseries/wells_timeseries",
                "ts_attributes": "02_Timeseries/wells_timeseries_attributes",
                "max_dist": "02_Statistics/max_distance",
@@ -46,7 +46,7 @@ config = {
                "par": "02_Timeseries/wells_mul_par_all",
                "lost_per": "02_Statistics/wells_timeseries_drops",
                "duration": "GGMN_preprocessing_duration.txt"},
-    "small": True # If True, only 1/50 of the data is processed to create a smaller test dataset
+    "small": False # If True, only 1/50 of the data is processed to create a smaller test dataset
 }
 
 # Constants for temporal classification

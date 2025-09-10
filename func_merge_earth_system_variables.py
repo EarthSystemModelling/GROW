@@ -8,6 +8,7 @@ import os  # built-in package
 import xarray as xr  # imported version: 2025.3.0
 from netCDF4 import Dataset  # imported version: 1.7.2
 import geopandas as gpd  # imported version: 1.0.1
+from pyproj import CRS
 
 
 def get_paths(path, pattern, pattern2=None, full=False):
@@ -42,7 +43,7 @@ def calc_dd(config):
     # import HydroBASINS shapefile
     basins = gpd.read_file(config["basepath"] + config["factors"]["basins"])
     # reproject to metric crs World-Eckert-IV
-    basins.to_crs(epsg="ESRI:54012", inplace=True)
+    basins.to_crs(crs=CRS.from_authority('ESRI', 54012), inplace=True)
     # recalculate area with the metric crs in m²
     basins["area"] = basins.area
     # calculate absolute difference between original area and calculated area in World-Eckert-IV
@@ -51,7 +52,7 @@ def calc_dd(config):
     # import HydroRivers shapefile
     riv = gpd.read_file(config["basepath"] + config["factors"]["rivers"])
     # reproject to metric crs World-Eckert-IV
-    riv.to_crs(epsg="ESRI:54012", inplace=True)
+    riv.to_crs(crs=CRS.from_authority('ESRI', 54012), inplace=True)
     # intersect rivers and basins (cut river polylines at basin borders)
     riv_cut = gpd.overlay(basins, riv, how="intersection", keep_geom_type=False)
     riv_cut["riv_len"] = riv_cut.length  # calculate length of every river segment in m
