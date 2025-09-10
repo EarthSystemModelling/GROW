@@ -385,7 +385,7 @@ if config["modules"]["timeseries"]:
         """
 
         # trim timeseries by well IDs (one of the 100 parts)
-        ts = pd.merge(ts, df["GROW_ID"], how="inner", on="GROW_ID")
+        #ts = pd.merge(ts, df["GROW_ID"], how="inner", on="GROW_ID")
 
         # MSWEP - 3-hourly precipitation [mm/3 hours]
         if config["modules"]["mswep"]:
