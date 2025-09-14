@@ -7,8 +7,8 @@ For that, we need to 1.) extract monthly groundwater time series from Brazil, 2.
 import pandas as pd  # imported version: 2.2.3
 import pyarrow.dataset as ds # imported version: 19.0.1
 
-path_attributes = "/mnt/storage/grow/09_final_grow/grow_attributes.csv"
-path_timeseries = "/mnt/storage/grow/09_final_grow/grow_timeseries.parquet"
+path_attributes = "/mnt/storage/grow/09_final_grow/V08_small/grow_attributes.csv"
+path_timeseries = "/mnt/storage/grow/09_final_grow/V08_small/grow_timeseries.parquet"
 
 # load GROW tables
 attributes = pd.read_csv(path_attributes, sep=";") # table in csv-format

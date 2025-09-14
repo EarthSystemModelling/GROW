@@ -12,21 +12,13 @@ import geopandas as gpd  # imported version: 1.0.1
 import multiprocessing  # built-in package
 import warnings  # built-in package
 from func_merge_earth_system_variables import (
-    merge_vector_point,
-)  # merge static vector data to groundwater attributes table
-from func_merge_earth_system_variables import (
-    merge_raster_static,
-)  # merge static raster data to groundwater attributes table
-from func_merge_earth_system_variables import (
-    merge_raster_transient,
-)  # extracts raster values at well locations
-from func_merge_earth_system_variables import (
-    aggregate_merge,
-)  # aggregation of time series variables and merge to groundwater time series
-from func_merge_earth_system_variables import get_paths  # derived file paths
-from func_merge_earth_system_variables import (
-    calc_dd,
-)  # calculates global drainage density map
+    merge_vector_point, # merge static vector data to groundwater attributes table
+    merge_raster_static, # merge static raster data to groundwater attributes table
+    merge_raster_transient, # extracts raster values at well locations
+    aggregate_merge, # aggregation of time series variables and merge to groundwater time series
+    get_paths,# derives file paths
+    calc_dd, # calculates global drainage density map
+)
 
 # Configuration: Path names, output names and other settings are defined here.
 config = {
@@ -68,9 +60,9 @@ config = {
     # names of final GROW tables
     "output_tables": {
         "att": "09_final_grow/V08_small/grow_attributes_without_lu.csv",
-        "att_full": "09_final_grow/V08_small/grow_attributes.csv",
+        "att_full": "09_final_grow/V08_small/grow_attributes",
         "att_geo": "09_final_grow/V08_small/grow_attributes.json",
-        "ts": "09_final_grow/V08_small/grow_timeseries.csv",
+        "ts": "09_final_grow/V08_small/grow_timeseries",
     },
     # With modules, the processing of all static variables, all time series variables or single variables can be enabled (True) or disabled (False)
     "modules": {
@@ -97,8 +89,8 @@ config = {
         "gpcc": True,
         "abstract": True,
         "lu": True,
-        "static": True,
-        "timeseries": True,
+        "static": False,
+        "timeseries": False,
         "joinall": True,
     },
     "cores_num": 100,  # Number of cores that work in parallel in the time series module
@@ -707,10 +699,8 @@ if config["modules"]["joinall"]:
     )
 
     # final export of full time series table
-    ts_fin.to_csv(
-        config["basepath"] + config["output_tables"]["ts"], sep=";", index=False
-    )
-    ts_fin.to_parquet(config["basepath"] + config["output_tables"]["ts"], index=False)
+    ts_fin.to_csv(config["basepath"] + config["output_tables"]["ts"] + ".csv", sep=";", index=False)
+    ts_fin.to_parquet(config["basepath"] + config["output_tables"]["ts"] + ".parquet", index=False)
 
     # add main land use to attributes table
     wells = pd.read_csv(
@@ -745,9 +735,10 @@ if config["modules"]["joinall"]:
         ]
     ].idxmax(axis=1)
     # if every land use fraction is 0, set main land use to NA
-    # TODO DN: Why not leave it 0?
-    if wells_fin["main_landuse_class"] == 0:
-        wells_fin.main_landuse_class = None
+    # TODO DN: Why not leave it 0? This step was not needed anymore because there
+    # are apparently no 0 anymore, but NA where there is no
+    # main land use (happens when all land use class fractions are NA as well)
+
     # drop single land use fractions
     wells_fin.drop(
         columns=[
@@ -762,15 +753,14 @@ if config["modules"]["joinall"]:
 
     ## export attributes as csv, parquet and json
     # Convert data type to only string so that export as parquet works
-    wells_fin["original_ID_groundwater"] = wells_fin["original_ID_groundwater"].astype(
-        "str"
-    )
+    wells_fin["original_ID_groundwater"] = wells_fin["original_ID_groundwater"].astype("str")
     wells_fin["name"] = wells_fin["name"].astype("str")
+
     wells_fin.to_csv(
-        config["basepath"] + config["output_tables"]["att_full"], sep=";", index=False
+        config["basepath"] + config["output_tables"]["att_full"] + ".csv", sep=";", index=False
     )
     wells_fin.to_parquet(
-        config["basepath"] + config["output_tables"]["att_full"],
+        config["basepath"] + config["output_tables"]["att_full"] + ".parquet",
         index=False,
         engine="pyarrow",
     )
