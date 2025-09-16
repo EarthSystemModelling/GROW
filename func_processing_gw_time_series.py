@@ -1,5 +1,3 @@
-## func_processing_gw_time_series
-
 """This file contains all functions that are used in "01_processing_gw_time_series.py"."""
 
 # import packages
@@ -12,18 +10,13 @@ from scipy import interpolate  # imported version: 1.15.2
 import operator  # internal package
 import pymannkendall as mk  # imported version: 1.4.3
 
-
-## extract longest sequence
-
-
 def extract_seq(
-    df: pd.DataFrame,
-    series: pd.Series,
-    datatype: str,
-    relate: str,
-    threshold: int,
-    append=False,
-) -> pd.DataFrame:
+        df: pd.DataFrame,
+        series: pd.Series,
+        datatype: str,
+        relate: str,
+        threshold: int,
+        append=False,) -> pd.DataFrame:
     """Extract longest continuous sequence below threshold.
 
     Args:
@@ -32,7 +25,7 @@ def extract_seq(
         datatype: data type for series conversion
         relate: comparison operator as string ('<=', '>=', etc.)
         threshold: threshold value for comparison
-        append: wether to append next time step to sequence
+        append: whether to append next time step to sequence
 
     Returns:
         DataFrame containing the longest valid sequence
@@ -45,28 +38,22 @@ def extract_seq(
         "==": operator.eq,
         "!=": operator.ne,
     }
-    sequence = np.where(rel_ops[relate](series.astype(datatype), threshold).tolist())[
-        0
-    ]  ## get index where the interval to the next time step is <= allowed distance
-    longest_seq = max(
-        np.split(sequence, np.where(np.diff(sequence) != 1)[0] + 1), key=len
-    )  # find longest continuous sequence in indexes
+    ## get index where the interval to the next time step is <= allowed distance
+    sequence = np.where(rel_ops[relate](series.astype(datatype), threshold).tolist())[0]
+    # find longest continuous sequence in indexes
+    longest_seq = max(np.split(sequence, np.where(np.diff(sequence) != 1)[0] + 1), key=len)
 
     if len(longest_seq) == 0:
         return pd.DataFrame([])
     else:
         if append:
-            longest_seq = np.append(
-                longest_seq, longest_seq[-1] + 1
-            )  # to add last record
-        res = df.iloc[(longest_seq.min()) : (longest_seq.max() + 1), :].reset_index(
-            drop=True
-        )  # select longest continuous sequence from time series and reset index
+            longest_seq = np.append(longest_seq, longest_seq[-1] + 1)  # to add last record
+        # select longest continuous sequence from time series and reset index
+        res = df.iloc[(longest_seq.min()) : (longest_seq.max() + 1), :].reset_index(drop=True)
         return res
 
 
 def get_max_dist(df, threshold, pairs, pvalue):
-    ## get_max_dist: Method and script adapted from Gunnar Lischeid
     """This function calculates the maximum allowed gap length between time steps
     based on autocorrelation. The allowed gap length is as long as the time series
     autocorrelates with a defined correlation coefficient threshold (Spearman r).
@@ -77,29 +64,25 @@ def get_max_dist(df, threshold, pairs, pvalue):
     pairs: minimum number of data pairs (overlap) to perform correlation
     pvalue: if True, significance of test is considered
     """
-    # check if aggregation is allowed
     # date as int
     data = df.copy()
     data["date_int"] = (
-        data["date"].apply(lambda x: ((datetime(1800, 1, 1) - x).total_seconds()))
-        / 86400
+        data["date"].apply(lambda x: ((datetime(1800, 1, 1) - x).total_seconds()))/ 86400
     )
-    # Calculate differences and lag classes
+    # calculate differences and lag classes
     dt = int(data.date_int.diff(periods=-1).median())  # dt is a day, month or year
     if dt == 0:
         count = False
         return (0, count)
-    classes = np.arange(
-        dt, 30 * dt, dt
-    )  # maximum allowed gap is 30 dt steps (probably day, month or year)
-    # Calculate correlation per lag class
-    dist_matrix = squareform(
-        pdist(data["date_int"].values.reshape(-1, 1), metric="euclidean")
-    )  # distance matrix
-    dist_matrix[np.triu_indices_from(dist_matrix)] = (
-        None  # Set upper triangle including diagonal to NA (None in Python)
-    )
+    # maximum allowed gap is 30 dt steps (probably day, month or year)
+    classes = np.arange(dt, 30 * dt, dt)
+    # calculate correlation per lag class
+    # create distance matrix
+    dist_matrix = squareform(pdist(data["date_int"].values.reshape(-1, 1), metric="euclidean"))
+    # set upper triangle including diagonal to NA (None in Python)
+    dist_matrix[np.triu_indices_from(dist_matrix)] = None
 
+    # create table that contains the correlation results per class
     acf_table = pd.DataFrame(
         columns=["From", "To", "Autocorrelation", "p-value", "Number_of_instances"],
         index=range(len(classes) - 1),
@@ -110,18 +93,14 @@ def get_max_dist(df, threshold, pairs, pvalue):
     # Loop through classes
     for i in range(len(classes) - 1):
         # Find indices where distance is within the current class range
-        class_range = (
-            acf_table.loc[i, "From"] + acf_table.loc[i, "To"]
-        ) / 2  # to sort the distances to the nearest class
-        sel = np.where(
-            (dist_matrix >= (class_range - dt)) & (dist_matrix < class_range)
-        )
+        # sort the distances to the nearest class
+        class_range = (acf_table.loc[i, "From"] + acf_table.loc[i, "To"]) / 2
+        # find index pairs per class
+        sel = np.where((dist_matrix >= (class_range - dt)) & (dist_matrix < class_range))
 
         # Calculate correlation
         if len(sel[0]) > pairs:  # at least 30 pairs to calculate correlation
-            correlation, p_val = spearmanr(
-                data.loc[sel[0], "Value"], data.loc[sel[1], "Value"]
-            )
+            correlation, p_val = spearmanr(data.loc[sel[0], "Value"], data.loc[sel[1], "Value"])
             acf_table.loc[i, "Autocorrelation"] = correlation
             if pvalue:
                 if p_val > 0.05:
@@ -135,24 +114,19 @@ def get_max_dist(df, threshold, pairs, pvalue):
         acf_table.loc[i, "Number_of_instances"] = len(sel[0])
 
     # return maximum allowed distance
-    subset = acf_table[
-        (acf_table["Autocorrelation"] > 0).cummin()
-    ]  # subset all positive correlation coefficients before negative ones
+    # subset all positive correlation coefficients before negative ones
+    subset = acf_table[(acf_table["Autocorrelation"] > 0).cummin()]
     if any(subset.Autocorrelation >= threshold):
+        # extract distance where the correlation coefficient is nearest above treshhold
         dists = (
-            (
-                subset.From[subset.Autocorrelation >= threshold]
-                + subset.To[subset.Autocorrelation >= threshold]
-            )
+            (subset.From[subset.Autocorrelation >= threshold]+
+             subset.To[subset.Autocorrelation >= threshold])
             / 2
-        ).to_list()[
-            -1
-        ]  # extract distance where the correlation coefficient is nearest above treshhold
+            ).to_list()[
+            -1]
         count = True
     else:
-        dists = (
-            acf_table.From[0] + acf_table.To[0]
-        ) / 2  # to include 31-day-months and leap years
+        dists = (acf_table.From[0] + acf_table.To[0]) / 2  # to include 31-day-months and leap years
         count = False
     return (dists, count)
 
@@ -177,10 +151,10 @@ def fill_gaps(df):
     """
     dummy = df.copy()
     # construct time series with no gaps
-    ts = pd.date_range(
-        dummy.loc[0, "date"], dummy.loc[len(dummy) - 1, "date"], freq=dummy.interval[0]
-    )  # complete time series
-    # to interpolate the gaps we need a function between the groundwater values and the date, the date needs to be numeric for that purpose
+    # complete time series
+    ts = pd.date_range(dummy.loc[0, "date"], dummy.loc[len(dummy) - 1, "date"], freq=dummy.interval[0])
+    # to interpolate the gaps we need a function between the groundwater values and the date
+    # the date needs to be numeric for that purpose
     ts_int = (ts - datetime(1800, 1, 1)).total_seconds()
     ts_df = pd.DataFrame({"time_int": ts_int, "date": ts})
 
@@ -196,9 +170,9 @@ def fill_gaps(df):
 
     # use interpolation function to construct a complete groundwater time series
     raw3["groundwater_filled"] = gw_func(raw3["time_int"])
-    raw3["date_x"] = raw3[
-        "date_y"
-    ]  # I actually want to have date_y as new complete datetime column but to avoid changing column order, I just overwrite the old datetime column
+    # I actually want to have date_y as new complete datetime column but to avoid changing column order,
+    # I just overwrite the old datetime column
+    raw3["date_x"] = raw3["date_y"]
     raw3.drop(axis=0, columns=["dateint", "time_int", "date_y"], inplace=True)
     raw3.rename(columns={"date_x": "date"}, inplace=True)
     # refill unique-value columns to avoid NA in them
@@ -227,7 +201,8 @@ def calc_trend(df, pre=False):
     trend = res.trend
     slope = res.slope
 
-    # when there is no significant trend, the calculated slope is ignored; could be quite high but insignificant because of too less data points
+    # when there is no significant trend, the calculated slope is ignored;
+    # could be quite high but insignificant because of too less data points
     if trend == "no trend":
         return ("no trend", None)
 

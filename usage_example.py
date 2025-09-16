@@ -7,10 +7,15 @@ For that, we need to
 """
 
 import pandas as pd  # imported version: 2.2.3
+import pyarrow.dataset as ds # imported version: 19.0.1
+
+# path_attributes = "/mnt/storage/grow/09_final_grow/V08_small/grow_attributes.csv"
+# path_timeseries = "/mnt/storage/grow/09_final_grow/V08_small/grow_timeseries.parquet"
+path_data = "/mnt/storage/grow/09_final_grow/V08_small"
 
 # load GROW tables
 print("loading csv...")
-attributes = pd.read_csv("./data/grow_attributes.csv", sep=";")
+attributes = pd.read_csv(f"{path_data}/grow_attributes.csv", sep=";")
 
 print("filtering...")
 # 1.) Select GROW_IDs based on filters
@@ -20,12 +25,18 @@ attr_bra_monthly = attributes[
     (attributes.country == "BRA") & (attributes.interval != "YS")
 ]
 
-
 print("loading parquet with filter...")
 timeseries = pd.read_parquet(
     "./data/grow_timeseries.parquet",
     filters=[("GROW_ID", "in", attr_bra_monthly["GROW_ID"])],
 )
+
+# Option: explicitly use pyarrow
+# # load timeseries without full memory load
+# timeseries_dataset_raw = ds.dataset(path_timeseries, format="parquet")
+# # create table based on attributes subset
+# ts_bra_raw= timeseries_dataset_raw.to_table(filter=ds.field("GROW_ID").isin(attr_bra_monthly.GROW_ID))
+# ts_bra = ts_bra_raw.to_pandas() # convert table object into pandas DataFrame
 
 # 2.) aggregate time series to a monthly resolution
 # drop filter columns that are not needed

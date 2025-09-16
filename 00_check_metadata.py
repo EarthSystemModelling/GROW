@@ -4,12 +4,12 @@ to add the sheet to GROW's attribute table or not."""
 
 import os  # built-in package
 
-import pandas as pd  # imported version: 2.2.3
+import pandas as pd  # imported version: 2.2.3 4
 
 # Configuration: Path names, output names and other settings are defined here.
 config = {
-    "basepath": "/mnt/storage/grow/Groundwater/",  # directory in which groundwater data and all groundwater related outputs of GROW are located
-    "wells": "Well_And_Monitoring_Data",  # folder with IGRACs groundwater data
+    "basepath" : "/mnt/storage/grow/01_Groundwater/", # directory in which groundwater data and all groundwater related outputs of GROW are located
+    "wells": "01_IGRAC_data_2025_08_18", # folder with IGRACs groundwater data
 }
 
 # Derive well attributes per sheet
@@ -30,13 +30,13 @@ structure = []
 
 # loop over every country folder
 for fold in folders:
-    file = config["basepath"] + config["wells"] + "/" + fold + "/" + "wells.xlsx"
+    file = config["basepath"] + config["wells"] + "/" + fold + "/" + "wells.ods"
 
-    well = pd.read_excel(file, engine="openpyxl", sheet_name=1, skiprows=[1, 1])
+    well = pd.read_excel(file, engine="odf", sheet_name=1, skiprows=[1, 1])
     if not well.empty:
         hydrogeo.append(well)
 
-    well = pd.read_excel(file, engine="openpyxl", sheet_name=2, skiprows=[1, 1])
+    well = pd.read_excel(file, engine="odf", sheet_name=2, skiprows=[1, 1])
     if not well.empty:
         management.append(well)
 
@@ -49,19 +49,19 @@ for fold in folders:
         + "drilling_and_construction.xlsx"
     )
 
-    well = pd.read_excel(file, engine="openpyxl", sheet_name=0, skiprows=[1, 1])
+    well = pd.read_excel(file, engine="odf", sheet_name=0, skiprows=[1, 1])
     if not well.empty:
         construction.append(well)
 
-    well = pd.read_excel(file, engine="openpyxl", sheet_name=1, skiprows=[1, 1])
+    well = pd.read_excel(file, engine="odf", sheet_name=1, skiprows=[1, 1])
     if not well.empty:
         water_strike.append(well)
 
-    well = pd.read_excel(file, engine="openpyxl", sheet_name=2, skiprows=[1, 1])
+    well = pd.read_excel(file, engine="odf", sheet_name=2, skiprows=[1, 1])
     if not well.empty:
         log.append(well)
 
-    well = pd.read_excel(file, engine="openpyxl", sheet_name=3, skiprows=[1, 1])
+    well = pd.read_excel(file, engine="odf", sheet_name=3, skiprows=[1, 1])
     if not well.empty:
         structure.append(well)
 
