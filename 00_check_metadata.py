@@ -8,8 +8,8 @@ import pandas as pd  # imported version: 2.2.3 4
 
 # Configuration: Path names, output names and other settings are defined here.
 config = {
-    "basepath" : "/mnt/storage/grow/01_Groundwater/", # directory in which groundwater data and all groundwater related outputs of GROW are located
-    "wells": "01_IGRAC_data_2025_08_18", # folder with IGRACs groundwater data
+    "basepath": "/mnt/storage/grow/01_Groundwater/",  # directory in which groundwater data and all groundwater related outputs of GROW are located
+    "wells": "01_IGRAC_data_2025_08_18",  # folder with IGRACs groundwater data
 }
 
 # Derive well attributes per sheet
