@@ -11,7 +11,7 @@ import pandas as pd  # imported version: 2.2.3
 import geopandas as gpd  # imported version: 1.0.1
 import multiprocessing  # built-in package
 import warnings  # built-in package
-from func_merge_earth_system_variables import (
+from func_merge_earth_system_variables import ( 
     merge_vector_point,  # merge static vector data to groundwater attributes table
     merge_raster_static,  # merge static raster data to groundwater attributes table
     merge_raster_transient,  # extracts raster values at well locations
@@ -591,6 +591,11 @@ if config["modules"]["timeseries"]:
             )  # merge via ID and date of time series
 
         # export time series table
+        ts.to_csv(
+            config["basepath"] + config["output"] + "join_all_" + str(i) + ".txt",
+            sep=";",
+            index=False,
+        )
 
     # Load full groundwater time series table
     ts = pd.read_csv(config["basepath"] + config["timeseries"], sep=";")
@@ -619,9 +624,8 @@ if config["modules"]["timeseries"]:
         ]
 
         # TODO: add debug flag and set in debug env
-        total_merge(
-            wells_parts[5], ts, "05"
-        )  # with this line, the function can be checked in debug mode
+        # with this line, the function can be checked in debug mode
+        total_merge(wells_parts[5], ts, "05")
 
         # create a roadmap where for each of the 100 processes the function that shall run and the inserted parameters are given
         for i, ele in enumerate(wells_parts):

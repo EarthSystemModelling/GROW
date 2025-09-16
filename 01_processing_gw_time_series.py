@@ -136,16 +136,13 @@ for path in full_path:
         if raw.empty:
             data_lost_a = data_lost_a + [raw.copy(deep=True)]
             continue
-        elif (
-            len(raw) < 2
-        ):  # does not work if empty, so there has to be a pre-check if it is empty
+        # does not work if empty, so there has to be a pre-check if it is empty
+        elif len(raw)<2: 
             data_lost_a = data_lost_a + [raw.copy(deep=True)]
             continue
 
         # Convert datetime column
-        raw["Date and Time"] = pd.to_datetime(
-            raw["Date and Time"], format="%Y-%m-%d %H:%M:%S UTC"
-        )
+        raw["Date and Time"] = pd.to_datetime(raw["Date and Time"], format='mixed')
         # flag year,month and day
         raw["year"] = raw["Date and Time"].dt.year.astype("int")
         raw["month"] = raw["Date and Time"].dt.to_period("M")
@@ -175,9 +172,8 @@ for path in full_path:
         if raw.loc[0, "Parameter"] != "Water level elevation a.m.s.l.":
             if (raw.Value < 0).all():  # all records are negative
                 outliers_depth_all = outliers_depth_all + [raw.copy(deep=True)]
-                raw.Value = raw.Value * (
-                    -1
-                )  # when all values are negative, we just need a sign switch
+                # when all values are negative, we just need a sign switch
+                raw.Value = raw.Value * (-1)  
             elif (raw.Value < 0).any():  # only some records are negative
                 outliers_depth_any = outliers_depth_any + [raw]
                 raw = raw.drop(index=raw[raw.Value < 0].index).reset_index(
@@ -218,9 +214,8 @@ for path in full_path:
             raw["aggregated_from_n_values"] = None
         else:
             for t in ts:
-                raw["aggregated_from_n_values"][raw["merge"] == t] = len(
-                    raw[raw["merge"] == t]
-                )  # TODO
+                raw["aggregated_from_n_values"][raw["merge"] == t] = (
+                    len(raw[raw["merge"] == t]))  # TODO
 
         ## Aggregate time series
         raw2 = (
@@ -331,7 +326,7 @@ for path in full_path:
             # When time series is too short, discard current time series and continue with the next time series
             if len(raw5) < 2:
                 data_lost_f = data_lost_f + [raw5.copy(deep=True)]
-                continue  # data is discarded
+                continue # data is discarded
             raw5.drop("year", axis=1, inplace=True)
             gap_amount = len(raw5[raw5.Value.isna()]) / len(raw5)
         else:
@@ -601,7 +596,7 @@ for li, pa in zip(lists, paths):
             index=False,
             sep=";",
         )
-    except ValueError:  # in case the list is empty
+    except ValueError: # in case the list is empty
         pass
 
 # Print duration of script

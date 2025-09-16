@@ -41,7 +41,7 @@ folders = os.listdir(
 
 wells = []
 wells_drop = []  # to store discarded well duplicates
-all_wells = []  # to merge all unprocessed attribute tables
+all_wells = [] # to merge all unprocessed attribute tables
 total_number = 0  # to count all wells
 all_kept = 0  # to count all kept wells
 
@@ -233,7 +233,6 @@ lost_duplicate_location = len(wells_merge) - len(wells_drop_dup)
 # Drop wells in wrong coordinate systems
 """In WGS 84, the latitude coordinates should be between -90 and 90. Longitude coordinates should be between -180 and 180.
 Wells with coordinates outside this range are discarded here."""
-
 wells_filt = wells_drop_dup.drop(
     wells_drop_dup[
         (wells_drop_dup.latitude > 90) | (wells_drop_dup.latitude < -90)
