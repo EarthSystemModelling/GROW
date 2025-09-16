@@ -11,52 +11,69 @@ import pandas as pd  # imported version: 2.2.3
 import geopandas as gpd  # imported version: 1.0.1
 import multiprocessing  # built-in package
 import warnings  # built-in package
-from func_merge_earth_system_variables import (
-    merge_vector_point, # merge static vector data to groundwater attributes table
-    merge_raster_static, # merge static raster data to groundwater attributes table
-    merge_raster_transient, # extracts raster values at well locations
-    aggregate_merge, # aggregation of time series variables and merge to groundwater time series
-    get_paths,# derives file paths
-    calc_dd, # calculates global drainage density map
+from func_merge_earth_system_variables import ( 
+    merge_vector_point,  # merge static vector data to groundwater attributes table
+    merge_raster_static,  # merge static raster data to groundwater attributes table
+    merge_raster_transient,  # extracts raster values at well locations
+    aggregate_merge,  # aggregation of time series variables and merge to groundwater time series
+    get_paths,  # derives file paths
+    calc_dd,  # calculates global drainage density map
 )
 
 # Configuration: Path names, output names and other settings are defined here.
 config = {
-    "basepath" : "/mnt/storage/grow/", # GROW project directory
-    "wells" : "01_Groundwater/02_Attributes/wells_attributes_V08_small.txt", # path to groundwater attributes table
-    "timeseries": "01_Groundwater/02_Timeseries/wells_timeseries_final_V08_small.txt", # path to groundwater time series table
+    "basepath": "/mnt/storage/grow/",  # GROW project directory
+    "wells": "01_Groundwater/02_Attributes/wells_attributes_V08_small.txt",  # path to groundwater attributes table
+    "timeseries": "01_Groundwater/02_Timeseries/wells_timeseries_final_V08_small.txt",  # path to groundwater time series table
     # paths to original data of Earth system variables; path to file for static variables; path to folder containing files for time series variables
-    "factors": {"dem": "04_Geosphere/Topography/MERIT_DEM/MERIT/MERIT_DEM.tif",
-                "slope": "04_Geosphere/Topography/Slope_MERIT_DEM/dtm_slope_merit.dem_m_250m_s0..0cm_2018_v1.0.tif",
-                "glim":{"data":'04_Geosphere/GLiM/glim_wgs84_0point5deg.txt.asc',"codes":"04_Geosphere/GLiM/Classnames.txt"},
-                "permeability":"04_Geosphere/GLYHMPS2.0/GLHYMPS.shp",
-                "porosity":"04_Geosphere/GLHYMPS/GLHYMPS/GLHYMPS.gdb/a00000009.gdbtable",
-                "glacier_permafrost":"02_HydroAtlas/BasinATLAS_v10_shp/BasinATLAS_v10_lev12.shp",
-                "whymap": "04_Geosphere/WHYMAP/WHYMAP_WOKAM/shp/whymap_karst__v1_poly.shp",
-                "ggde": {"data":"07_Biosphere/GGDE/Huggins/gde-map.tif","codes":"07_Biosphere/GGDE/Huggins/GGDE_names.txt"},
-                "basins": "02_HydroAtlas/BasinATLAS_v10_shp/BasinATLAS_v10_lev09.shp",
-                "rivers": "02_HydroAtlas/HydroRIVERS_v10_shp/HydroRIVERS_v10.shp",
-                "drain_den": "05_Hydrosphere/Drainage_Density_ESRI_54012/Drainage_density.shp",
-                "mswep": "03_Atmosphere/Precipitation/MSWEP/Selection",
-                "gpcc": "03_Atmosphere/Precipitation/GPCC/",
-                "gleam": "03_Atmosphere/GLEAM/daily_4_1a",
-                "hydrobelts": {"data":"03_Atmosphere/Hydroregions/meybeck_et_al_2013_hydrobelts_shp/meybeck_et_al_2013_hydrobelts.shp", "codes":"03_Atmosphere/Hydroregions/hydrobelts_codes_reduced.txt"},
-                "gk": {"data": "03_Atmosphere/Climate_zones/CHELSA_kg0_1981-2010_V.2.1.tif", "codes": "03_Atmosphere/Climate_zones/kg0_names.txt"},
-                "abstract_ind": "08_Anthroposphere/Abstraction/ISIMIP_industrial",
-                "abstract_dom": "08_Anthroposphere/Abstraction/ISIMIP_domestic",
-                "ndvi": "07_Biosphere/NDVI/access",
-                "pet": "03_Atmosphere/ERA5-Land_daily/PET",
-                "temperature": "03_Atmosphere/ERA5-Land_daily/Temperature",
-                "snow_depth": "03_Atmosphere/ERA5-Land_daily/Snow",
-                "LAI_low" :"03_Atmosphere/ERA5-Land_daily/LAI_low",
-                "LAI_high" :"03_Atmosphere/ERA5-Land_daily/LAI_high",
-                "dist_streams": "05_Hydrosphere/Distance_perennial_streams/L01_m.tiff",
-                "gw_scapes": "08_Anthroposphere/Groundwaterscapes/groundwaterscapes.tif",
-                "lu_totals": "08_Anthroposphere/Land_use/totals",
-                "lu_urban": "08_Anthroposphere/Land_use/urban",
-                "soil_texture": {"data":"04_Geosphere/HiHydroKlass/STC","codes":"04_Geosphere/HiHydroKlass/STC/stc_codes.txt"},
-                "soil_kat": "04_Geosphere/HiHydroKlass/Ksat"},
-    "output": "01_Groundwater/GROW_merge_V08_small/", # folder in which the interim output files are exported
+    "factors": {
+        "dem": "04_Geosphere/Topography/MERIT_DEM/MERIT/MERIT_DEM.tif",
+        "slope": "04_Geosphere/Topography/Slope_MERIT_DEM/dtm_slope_merit.dem_m_250m_s0..0cm_2018_v1.0.tif",
+        "glim": {
+            "data": "04_Geosphere/GLiM/glim_wgs84_0point5deg.txt.asc",
+            "codes": "04_Geosphere/GLiM/Classnames.txt",
+        },
+        "permeability": "04_Geosphere/GLYHMPS2.0/GLHYMPS.shp",
+        "porosity": "04_Geosphere/GLHYMPS/GLHYMPS/GLHYMPS.gdb/a00000009.gdbtable",
+        "glacier_permafrost": "02_HydroAtlas/BasinATLAS_v10_shp/BasinATLAS_v10_lev12.shp",
+        "whymap": "04_Geosphere/WHYMAP/WHYMAP_WOKAM/shp/whymap_karst__v1_poly.shp",
+        "ggde": {
+            "data": "07_Biosphere/GGDE/Huggins/gde-map.tif",
+            "codes": "07_Biosphere/GGDE/Huggins/GGDE_names.txt",
+        },
+        "basins": "02_HydroAtlas/BasinATLAS_v10_shp/BasinATLAS_v10_lev09.shp",
+        "rivers": "02_HydroAtlas/HydroRIVERS_v10_shp/HydroRIVERS_v10.shp",
+        "drain_den": "05_Hydrosphere/Drainage_Density_ESRI_54012/Drainage_density.shp",
+        "mswep": "03_Atmosphere/Precipitation/MSWEP/Selection",
+        "gpcc": "03_Atmosphere/Precipitation/GPCC/",
+        "gleam": "03_Atmosphere/GLEAM/daily_4_1a",
+        "hydrobelts": {
+            "data": "03_Atmosphere/Hydroregions/meybeck_et_al_2013_hydrobelts_shp/meybeck_et_al_2013_hydrobelts.shp",
+            "codes": "03_Atmosphere/Hydroregions/hydrobelts_codes_reduced.txt",
+        },
+        "gk": {
+            "data": "03_Atmosphere/Climate_zones/CHELSA_kg0_1981-2010_V.2.1.tif",
+            "codes": "03_Atmosphere/Climate_zones/kg0_names.txt",
+        },
+        "abstract_ind": "08_Anthroposphere/Abstraction/ISIMIP_industrial",
+        "abstract_dom": "08_Anthroposphere/Abstraction/ISIMIP_domestic",
+        "ndvi": "07_Biosphere/NDVI/access",
+        "pet": "03_Atmosphere/ERA5-Land_daily/PET",
+        "temperature": "03_Atmosphere/ERA5-Land_daily/Temperature",
+        "snow_depth": "03_Atmosphere/ERA5-Land_daily/Snow",
+        "LAI_low": "03_Atmosphere/ERA5-Land_daily/LAI_low",
+        "LAI_high": "03_Atmosphere/ERA5-Land_daily/LAI_high",
+        "dist_streams": "05_Hydrosphere/Distance_perennial_streams/L01_m.tiff",
+        "gw_scapes": "08_Anthroposphere/Groundwaterscapes/groundwaterscapes.tif",
+        "lu_totals": "08_Anthroposphere/Land_use/totals",
+        "lu_urban": "08_Anthroposphere/Land_use/urban",
+        "soil_texture": {
+            "data": "04_Geosphere/HiHydroKlass/STC",
+            "codes": "04_Geosphere/HiHydroKlass/STC/stc_codes.txt",
+        },
+        "soil_kat": "04_Geosphere/HiHydroKlass/Ksat",
+    },
+    "output": "01_Groundwater/GROW_merge_V08_small/",  # folder in which the interim output files are exported
     # names of final GROW tables
     "output_tables": {
         "att": "09_final_grow/V08_small/grow_attributes_without_lu.csv",
@@ -114,7 +131,9 @@ if config["modules"]["static"]:
             col_name="koeppen_geiger",
         )
         # convert numeric value to class name
-        codes = pd.read_csv(config["basepath"] + config["factors"]["gk"]["codes"], sep=";")
+        codes = pd.read_csv(
+            config["basepath"] + config["factors"]["gk"]["codes"], sep=";"
+        )
         wells = pd.merge(
             wells, codes, how="left", left_on="koeppen_geiger", right_on="value"
         ).drop(columns={"koeppen_geiger", "value", "group", "class name"})
@@ -377,7 +396,7 @@ if config["modules"]["timeseries"]:
         """
 
         # trim timeseries by well IDs (one of the 100 parts)
-        #ts = pd.merge(ts, df["GROW_ID"], how="inner", on="GROW_ID")
+        # ts = pd.merge(ts, df["GROW_ID"], how="inner", on="GROW_ID")
 
         # MSWEP - 3-hourly precipitation [mm/3 hours]
         if config["modules"]["mswep"]:
@@ -604,7 +623,9 @@ if config["modules"]["timeseries"]:
             for i in range(config["cores_num"])
         ]
 
-        total_merge(wells_parts[5], ts, "05") # with this line, the function can be checked in debug mode
+        # TODO: add debug flag and set in debug env
+        # with this line, the function can be checked in debug mode
+        total_merge(wells_parts[5], ts, "05")
 
         # create a roadmap where for each of the 100 processes the function that shall run and the inserted parameters are given
         for i, ele in enumerate(wells_parts):
@@ -699,8 +720,14 @@ if config["modules"]["joinall"]:
     )
 
     # final export of full time series table
-    ts_fin.to_csv(config["basepath"] + config["output_tables"]["ts"] + ".csv", sep=";", index=False)
-    ts_fin.to_parquet(config["basepath"] + config["output_tables"]["ts"] + ".parquet", index=False)
+    ts_fin.to_csv(
+        config["basepath"] + config["output_tables"]["ts"] + ".csv",
+        sep=";",
+        index=False,
+    )
+    ts_fin.to_parquet(
+        config["basepath"] + config["output_tables"]["ts"] + ".parquet", index=False
+    )
 
     # add main land use to attributes table
     wells = pd.read_csv(
@@ -734,11 +761,6 @@ if config["modules"]["joinall"]:
             "pastures_fraction",
         ]
     ].idxmax(axis=1)
-    # if every land use fraction is 0, set main land use to NA
-    # TODO DN: Why not leave it 0? This step was not needed anymore because there
-    # are apparently no 0 anymore, but NA where there is no
-    # main land use (happens when all land use class fractions are NA as well)
-
     # drop single land use fractions
     wells_fin.drop(
         columns=[
@@ -753,11 +775,15 @@ if config["modules"]["joinall"]:
 
     ## export attributes as csv, parquet and json
     # Convert data type to only string so that export as parquet works
-    wells_fin["original_ID_groundwater"] = wells_fin["original_ID_groundwater"].astype("str")
+    wells_fin["original_ID_groundwater"] = wells_fin["original_ID_groundwater"].astype(
+        "str"
+    )
     wells_fin["name"] = wells_fin["name"].astype("str")
 
     wells_fin.to_csv(
-        config["basepath"] + config["output_tables"]["att_full"] + ".csv", sep=";", index=False
+        config["basepath"] + config["output_tables"]["att_full"] + ".csv",
+        sep=";",
+        index=False,
     )
     wells_fin.to_parquet(
         config["basepath"] + config["output_tables"]["att_full"] + ".parquet",

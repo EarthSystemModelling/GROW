@@ -8,8 +8,8 @@ import pandas as pd  # imported version: 2.2.3 4
 
 # Configuration: Path names, output names and other settings are defined here.
 config = {
-    "basepath" : "/mnt/storage/grow/01_Groundwater/", # directory in which groundwater data and all groundwater related outputs of GROW are located
-    "wells": "01_IGRAC_data_2025_08_18", # folder with IGRACs groundwater data
+    "basepath": "/mnt/storage/grow/01_Groundwater/",  # directory in which groundwater data and all groundwater related outputs of GROW are located
+    "wells": "01_IGRAC_data_2025_08_18",  # folder with IGRACs groundwater data
 }
 
 # Derive well attributes per sheet
@@ -32,29 +32,36 @@ structure = []
 for fold in folders:
     file = config["basepath"] + config["wells"] + "/" + fold + "/" + "wells.ods"
 
-    well = pd.read_excel(file, engine = 'odf', sheet_name=1, skiprows= [1,1])
-    if (well.empty == False):
+    well = pd.read_excel(file, engine="odf", sheet_name=1, skiprows=[1, 1])
+    if not well.empty:
         hydrogeo.append(well)
 
-    well = pd.read_excel(file, engine='odf', sheet_name=2, skiprows=[1, 1])
-    if (well.empty==False):
+    well = pd.read_excel(file, engine="odf", sheet_name=2, skiprows=[1, 1])
+    if not well.empty:
         management.append(well)
 
-    file = config["basepath"] + config["wells"] + "/" + fold + "/" + "drilling_and_construction.ods"
+    file = (
+        config["basepath"]
+        + config["wells"]
+        + "/"
+        + fold
+        + "/"
+        + "drilling_and_construction.xlsx"
+    )
 
-    well = pd.read_excel(file, engine='odf', sheet_name=0, skiprows=[1, 1])
-    if (well.empty == False):
+    well = pd.read_excel(file, engine="odf", sheet_name=0, skiprows=[1, 1])
+    if not well.empty:
         construction.append(well)
 
-    well = pd.read_excel(file, engine='odf', sheet_name=1, skiprows=[1, 1])
-    if (well.empty == False):
+    well = pd.read_excel(file, engine="odf", sheet_name=1, skiprows=[1, 1])
+    if not well.empty:
         water_strike.append(well)
 
-    well = pd.read_excel(file, engine='odf', sheet_name=2, skiprows=[1, 1])
-    if (well.empty == False):
+    well = pd.read_excel(file, engine="odf", sheet_name=2, skiprows=[1, 1])
+    if not well.empty:
         log.append(well)
 
-    well = pd.read_excel(file, engine='odf', sheet_name=3, skiprows=[1, 1])
+    well = pd.read_excel(file, engine="odf", sheet_name=3, skiprows=[1, 1])
     if not well.empty:
         structure.append(well)
 
@@ -71,4 +78,10 @@ all_as_df = {
 # Number of wells with information for every excel sheet
 for sheet in all_as_df:
     print(sheet)
-    print(len(all_as_df[sheet].iloc[:,1:][all_as_df[sheet].iloc[:,1:].isnull().all(1)==False]))
+    print(
+        len(
+            all_as_df[sheet].iloc[:, 1:][
+                all_as_df[sheet].iloc[:, 1:].isnull().all(1) is False
+            ]
+        )
+    )
