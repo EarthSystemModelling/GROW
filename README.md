@@ -18,9 +18,8 @@ vegetation, and anthropogenic variables (e.g., precipitation, drainage density, 
 -------------------------------------------------------
 
 <br/>
-
+The data set can be found at: Insert Zendodo link
 References and descriptions to the original data can be found in:
-
 (Bäthge et al.2026) ~ here I will cite the paper
 
 **The workflow to create GROW is implemented in the following scripts which should be run sequentially in the order:**
