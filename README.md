@@ -1,18 +1,18 @@
-<h1 align="center">GROW - Data Processing</h1>
+<h1 align="center">GROW 1.0 - Data Processing</h1>
 
-<h3 align="center">The python3 scripts in this repository were used to prepare the GROW dataset.</h3>
+<h3 align="center">The python scripts in this repository were used to prepare the GROW 1.0 dataset.</h3>
 
 <p align="center">
 <img src="2025_GROW_Blau_Web_150DPI.png" width="200" /> 
 </p>
 <p align="center">
-<em>GROW logo: Made by Malaika Mack / CC BY 4.0</em>
+<em>GROW logo: Bäthge et al. 2026 / CC BY 4.0</em>
 
-<p align="center">GROW (global integrated GROundWater package) is a global, analysis-ready, quality-controlled dataset that combines grounwater depth and level time series from around the world with associated Earth system
-variables. The dataset contains > 180,000 time series from 41 countries in a daily, monthly, or yearly temporal 
-resolution, accompanied by 35 time series or attributes of meteorological, hydrological, geophysical.
+<p align="center">GROW (global-scale integrated GROundWater package) is a global-scale, analysis-ready, quality-controlled dataset that combines grounwater depth and level time series from around the world with associated Earth system
+variables. The dataset contains > 200,000 time series from 55 countries in a daily, monthly, or yearly temporal 
+resolution, accompanied by 36 time series or attributes of meteorological, hydrological, geophysical.
 vegetation, and anthropogenic variables (e.g., precipitation, drainage density, aquifer type, NDVI, land use).
-33 data flags regarding well features (e.g., location coordinates and country), as well as time series characteristics
+34 data flags regarding well features (e.g., location coordinates and country), as well as time series characteristics
 (e.g., gap fraction or length), facilitate quick data filtering.</p>
 
 -------------------------------------------------------
@@ -21,7 +21,7 @@ vegetation, and anthropogenic variables (e.g., precipitation, drainage density, 
 
 References and descriptions to the original data can be found in:
 
-(Bäthge et al.2025) ~ here I will cite the preprint
+(Bäthge et al.2026) ~ here I will cite the paper
 
 **The workflow to create GROW is implemented in the following scripts which should be run sequentially in the order:**
 
@@ -51,8 +51,8 @@ This file contains all functions that are used in "01_processing_gw_time_series.
 
 The attributes table and the final time series table are created.
 Firstly, all files containing static (no temporal dimension) well attributes per country are read and merged together.
-A) duplicates by ID and country and b) duplicates by coordinates, starting date, ending date and mean groundwater
-table are removed. 
+A) duplicates by ID and country, b) duplicates by coordinates, starting date, ending date and mean groundwater
+table and c) duplicates originating from Jasechko et al. 2024 are removed. 
 Further, wells with coordinates outside realistic ranges are removed. Attributes generated in the
 time series processing are merged to the attributes from the original data. The time series table is trimmed to 
 the ID's that are still left in the preprocessed attributes table. 
@@ -60,9 +60,9 @@ A unique GROW ID is created.
 
 ### 03_merge_earth_system_variables.py
 
-35 Earth system variables (attributes and time series) are added to the attributes or time series table.
-First, 17 attributes are consecutively added to the groundwater data. Afterwards, 18 time series variables
-are merged to the groundwater time series within a parallelized process (server with multiple cores needed). 
+37 Earth system variables (attributes and time series) are added to the attributes or time series table.
+First, 20 attributes are consecutively added to the groundwater data. Afterwards, 17 time series variables
+are aggregated and merged to the groundwater time series within a parallelized process (server with multiple cores recommended). 
 The time series table is split into 100 parts for which the variables are added in parallel. In the end,
 all parts are put together again.
 
