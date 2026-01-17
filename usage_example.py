@@ -15,7 +15,7 @@ path_attributes = "/mnt/storage/grow/09_final_grow/grow_attributes.csv"
 path_timeseries = "/mnt/storage/grow/09_final_grow/grow_timeseries.parquet"
 
 # load GROW attributes tables
-print("loading csv...")
+print("loading attributes...")
 attributes = pd.read_csv(path_attributes, sep=",")
 
 # 1.) select GROW_IDs based on filters
