@@ -341,11 +341,11 @@ timeseries_trimmed.insert(0, 'GROW_ID', growid)
 par_sep = timeseries_trimmed.pivot(columns="parameter", values=["groundwater", "groundwater_filled"])
 par_sep.columns = [
     "groundwater_depth_from_ground_elevation_m",
-    "groundwater_depth_from_top_elevation_m",
-    "groundwater_water_level_m_asl",
+    "groundwater_depth_from_well_top_elevation_m",
+    "groundwater_water_level_elevation_m_asl",
     "groundwater_filled_depth_from_ground_elevation_m",
-    "groundwater_filled_depth_from_top_elevation_m",
-    "groundwater_filled_water_level_m_asl",
+    "groundwater_filled_depth_from_well_top_elevation_m",
+    "groundwater_filled_water_level_elevation_m_asl",
 ]
 # change reference_point term to column name
 timeseries_trimmed = pd.concat([timeseries_trimmed, par_sep], axis=1).drop(
