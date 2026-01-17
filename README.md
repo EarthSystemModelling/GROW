@@ -34,13 +34,13 @@ A description of each script's function is given below:
 
 ### 00_check_metadata.py
 
-In the original groundwater data, the attributes per time series are stored in 2 excel files with a total of 7 excel sheets.
+In the original groundwater data, the attributes per time series are stored in 2 ods files with a total of 7 sheets.
 In this script, the number of wells that contain information (not NA) per sheet is printed. Based on this, we decided whether to add the sheet to GROW's attribute table or not.
 
 ### 01_processing_gw_time_series.py
 
 A single table containing all time series is created. 
-Every time series of the original data is stored in an individual excel file. In this script, each time series file is consecutively read, processed, quality-checked, eventually discarded or appended to a single table. 
+Every time series of the original data is stored in an individual ods file. In this script, each time series file is consecutively read, processed, quality-checked, eventually discarded or appended to a single table. 
 Data flags are generated and either added as column to the time series data or exported to a time series attributes table.
 Other than that, discarded time series are collected in extra tables and exported. Time series statistics are derived and exported.
 
@@ -62,7 +62,7 @@ A unique GROW ID is created.
 ### 03_merge_earth_system_variables.py
 
 37 Earth system variables (attributes and time series) are added to the attributes or time series table.
-First, 20 attributes are consecutively added to the groundwater data. Afterwards, 17 time series variables
+First, 20 attributes are consecutively added to the groundwater data. Afterwards, 19 time series variables
 are aggregated and merged to the groundwater time series within a parallelized process (server with multiple cores recommended). 
 The time series table is split into 100 parts for which the variables are added in parallel. In the end,
 all parts are put together again.
