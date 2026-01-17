@@ -11,75 +11,58 @@ import pandas as pd  # imported version: 2.2.3
 import geopandas as gpd  # imported version: 1.0.1
 import multiprocessing  # built-in package
 import warnings  # built-in package
-from func_merge_earth_system_variables import ( 
-    merge_vector_point,  # merge static vector data to groundwater attributes table
-    merge_raster_static,  # merge static raster data to groundwater attributes table
-    merge_raster_transient,  # extracts raster values at well locations
-    aggregate_merge,  # aggregation of time series variables and merge to groundwater time series
-    get_paths,  # derives file paths
-    calc_dd,  # calculates global drainage density map
+from func_merge_earth_system_variables import (
+    merge_vector_point, # merge static vector data to groundwater attributes table
+    merge_raster_static, # merge static raster data to groundwater attributes table
+    merge_raster_transient, # extracts raster values at well locations
+    aggregate_merge, # aggregation of time series variables and merge to groundwater time series
+    get_paths,# derives file paths
+    calc_dd, # calculates global drainage density map
 )
 
 # Configuration: Path names, output names and other settings are defined here.
 config = {
-    "basepath": "/mnt/storage/grow/",  # GROW project directory
-    "wells": "01_Groundwater/02_Attributes/wells_attributes_V08_small.txt",  # path to groundwater attributes table
-    "timeseries": "01_Groundwater/02_Timeseries/wells_timeseries_final_V08_small.txt",  # path to groundwater time series table
+    "basepath" : "/mnt/storage/grow/", # GROW project directory
+    "wells" : "01_Groundwater/02_Attributes/wells_attributes_V09.txt", # path to groundwater attributes table
+    "timeseries": "01_Groundwater/02_Timeseries/wells_timeseries_final_V09.txt", # path to groundwater time series table
     # paths to original data of Earth system variables; path to file for static variables; path to folder containing files for time series variables
-    "factors": {
-        "dem": "04_Geosphere/Topography/MERIT_DEM/MERIT/MERIT_DEM.tif",
-        "slope": "04_Geosphere/Topography/Slope_MERIT_DEM/dtm_slope_merit.dem_m_250m_s0..0cm_2018_v1.0.tif",
-        "glim": {
-            "data": "04_Geosphere/GLiM/glim_wgs84_0point5deg.txt.asc",
-            "codes": "04_Geosphere/GLiM/Classnames.txt",
-        },
-        "permeability": "04_Geosphere/GLYHMPS2.0/GLHYMPS.shp",
-        "porosity": "04_Geosphere/GLHYMPS/GLHYMPS/GLHYMPS.gdb/a00000009.gdbtable",
-        "glacier_permafrost": "02_HydroAtlas/BasinATLAS_v10_shp/BasinATLAS_v10_lev12.shp",
-        "whymap": "04_Geosphere/WHYMAP/WHYMAP_WOKAM/shp/whymap_karst__v1_poly.shp",
-        "ggde": {
-            "data": "07_Biosphere/GGDE/Huggins/gde-map.tif",
-            "codes": "07_Biosphere/GGDE/Huggins/GGDE_names.txt",
-        },
-        "basins": "02_HydroAtlas/BasinATLAS_v10_shp/BasinATLAS_v10_lev09.shp",
-        "rivers": "02_HydroAtlas/HydroRIVERS_v10_shp/HydroRIVERS_v10.shp",
-        "drain_den": "05_Hydrosphere/Drainage_Density_ESRI_54012/Drainage_density.shp",
-        "mswep": "03_Atmosphere/Precipitation/MSWEP/Selection",
-        "gpcc": "03_Atmosphere/Precipitation/GPCC/",
-        "gleam": "03_Atmosphere/GLEAM/daily_4_1a",
-        "hydrobelts": {
-            "data": "03_Atmosphere/Hydroregions/meybeck_et_al_2013_hydrobelts_shp/meybeck_et_al_2013_hydrobelts.shp",
-            "codes": "03_Atmosphere/Hydroregions/hydrobelts_codes_reduced.txt",
-        },
-        "gk": {
-            "data": "03_Atmosphere/Climate_zones/CHELSA_kg0_1981-2010_V.2.1.tif",
-            "codes": "03_Atmosphere/Climate_zones/kg0_names.txt",
-        },
-        "abstract_ind": "08_Anthroposphere/Abstraction/ISIMIP_industrial",
-        "abstract_dom": "08_Anthroposphere/Abstraction/ISIMIP_domestic",
-        "ndvi": "07_Biosphere/NDVI/access",
-        "pet": "03_Atmosphere/ERA5-Land_daily/PET",
-        "temperature": "03_Atmosphere/ERA5-Land_daily/Temperature",
-        "snow_depth": "03_Atmosphere/ERA5-Land_daily/Snow",
-        "LAI_low": "03_Atmosphere/ERA5-Land_daily/LAI_low",
-        "LAI_high": "03_Atmosphere/ERA5-Land_daily/LAI_high",
-        "dist_streams": "05_Hydrosphere/Distance_perennial_streams/L01_m.tiff",
-        "gw_scapes": "08_Anthroposphere/Groundwaterscapes/groundwaterscapes.tif",
-        "lu_totals": "08_Anthroposphere/Land_use/totals",
-        "lu_urban": "08_Anthroposphere/Land_use/urban",
-        "soil_texture": {
-            "data": "04_Geosphere/HiHydroKlass/STC",
-            "codes": "04_Geosphere/HiHydroKlass/STC/stc_codes.txt",
-        },
-        "soil_kat": "04_Geosphere/HiHydroKlass/Ksat",
-    },
-    "output": "01_Groundwater/GROW_merge_V08_small/",  # folder in which the interim output files are exported
+    "factors": {"dem": "04_Geosphere/Topography/MERIT_DEM/MERIT/MERIT_DEM.tif",
+                "slope": "04_Geosphere/Topography/Slope_MERIT_DEM/dtm_slope_merit.dem_m_250m_s0..0cm_2018_v1.0.tif",
+                "glim":{"data":'04_Geosphere/GLiM/glim_wgs84_0point5deg.txt.asc',"codes":"04_Geosphere/GLiM/Classnames.txt"},
+                "permeability":"04_Geosphere/GLYHMPS2.0/GLHYMPS.shp",
+                "porosity":"04_Geosphere/GLHYMPS/GLHYMPS/GLHYMPS.gdb/a00000009.gdbtable",
+                "glacier_permafrost":"02_HydroAtlas/BasinATLAS_v10_shp/BasinATLAS_v10_lev12.shp",
+                "whymap": "04_Geosphere/WHYMAP/WHYMAP_WOKAM/shp/whymap_karst__v1_poly.shp",
+                "ggde": {"data":"07_Biosphere/GGDE/Huggins/gde-map.tif","codes":"07_Biosphere/GGDE/Huggins/GGDE_names.txt"},
+                "basins": "02_HydroAtlas/BasinATLAS_v10_shp/BasinATLAS_v10_lev09.shp",
+                "rivers": "02_HydroAtlas/HydroRIVERS_v10_shp/HydroRIVERS_v10.shp",
+                "drain_den": "05_Hydrosphere/Drainage_Density_ESRI_54012/Drainage_density.shp",
+                "mswep": "03_Atmosphere/Precipitation/MSWEP/Selection",
+                "gpcc": "03_Atmosphere/Precipitation/GPCC/",
+                "gleam": "03_Atmosphere/GLEAM/daily_4_1a",
+                "hydrobelts": {"data":"03_Atmosphere/Hydroregions/meybeck_et_al_2013_hydrobelts_shp/meybeck_et_al_2013_hydrobelts.shp", "codes":"03_Atmosphere/Hydroregions/hydrobelts_codes_reduced.txt"},
+                "gk": {"data": "03_Atmosphere/Climate_zones/CHELSA_kg0_1981-2010_V.2.1.tif", "codes": "03_Atmosphere/Climate_zones/kg0_names.txt"},
+                "abstract_ind": "08_Anthroposphere/Abstraction/ISIMIP_industrial",
+                "abstract_dom": "08_Anthroposphere/Abstraction/ISIMIP_domestic",
+                "ndvi": "07_Biosphere/NDVI/access",
+                "pet": "03_Atmosphere/ERA5-Land_daily/PET",
+                "temperature": "03_Atmosphere/ERA5-Land_daily/Temperature",
+                "snow_depth": "03_Atmosphere/ERA5-Land_daily/Snow",
+                "LAI_low" :"03_Atmosphere/ERA5-Land_daily/LAI_low",
+                "LAI_high" :"03_Atmosphere/ERA5-Land_daily/LAI_high",
+                "dist_streams": "05_Hydrosphere/Distance_perennial_streams/L01_m.tiff",
+                "gw_scapes": "08_Anthroposphere/Groundwaterscapes/groundwaterscapes.tif",
+                "lu_totals": "08_Anthroposphere/Land_use/totals",
+                "lu_urban": "08_Anthroposphere/Land_use/urban",
+                "soil_texture": {"data":"04_Geosphere/HiHydroKlass/STC","codes":"04_Geosphere/HiHydroKlass/STC/stc_codes.txt"},
+                "soil_kat": "04_Geosphere/HiHydroKlass/Ksat"},
+    "output": "01_Groundwater/GROW_merge_V09/", # folder in which the interim output files are exported
     # names of final GROW tables
     "output_tables": {
-        "att": "09_final_grow/V08_small/grow_attributes_without_lu.csv",
-        "att_full": "09_final_grow/V08_small/grow_attributes",
-        "att_geo": "09_final_grow/V08_small/grow_attributes.json",
-        "ts": "09_final_grow/V08_small/grow_timeseries",
+        "att": "09_final_grow/V09/grow_attributes_without_lu.csv",
+        "att_full": "09_final_grow/V09/grow_attributes",
+        "att_geo": "09_final_grow/V09/grow_attributes.json",
+        "ts": "09_final_grow/V09/grow_timeseries",
     },
     # With modules, the processing of all static variables, all time series variables or single variables can be enabled (True) or disabled (False)
     "modules": {
@@ -99,14 +82,14 @@ config = {
         "cyro": True,
         "ggde": True,
         "gw_scapes": True,
-        "mswep": True,
-        "ndvi": True,
-        "gleam": True,
+        "mswep": False,
+        "ndvi": False,
+        "gleam": False,
         "era5": True,
-        "gpcc": True,
-        "abstract": True,
-        "lu": True,
-        "static": False,
+        "gpcc": False,
+        "abstract": False,
+        "lu": False,
+        "static": True,
         "timeseries": False,
         "joinall": True,
     },
@@ -131,9 +114,7 @@ if config["modules"]["static"]:
             col_name="koeppen_geiger",
         )
         # convert numeric value to class name
-        codes = pd.read_csv(
-            config["basepath"] + config["factors"]["gk"]["codes"], sep=";"
-        )
+        codes = pd.read_csv(config["basepath"] + config["factors"]["gk"]["codes"], sep=";")
         wells = pd.merge(
             wells, codes, how="left", left_on="koeppen_geiger", right_on="value"
         ).drop(columns={"koeppen_geiger", "value", "group", "class name"})
@@ -195,6 +176,7 @@ if config["modules"]["static"]:
         wells = pd.merge(
             wells, names, how="left", left_on="rock_type", right_on="Value_"
         ).drop(columns={"Value_", "rock_type"})
+        wells.rename(columns={"rock_type_class": "rock_type_0-100_m_class"},inplace=True)
 
     # Aquifer type 2: Overwrite karst regions with Whymap [porous, fractured, karst or water_body]
     if config["modules"]["aquifer"]:
@@ -211,27 +193,17 @@ if config["modules"]["static"]:
     if config["modules"]["permeability"]:
         glyhmps2 = gpd.read_file(config["basepath"] + config["factors"]["permeability"])
         wells = merge_vector_point(glyhmps2, wells, ["logK_Ferr_"])
-        wells = wells.drop_duplicates(
-            subset="GROW_ID"
-        )  # some duplicates were created in merge_vector_point which are removed here
         wells.rename(columns={"logK_Ferr_": "permeability_0-100_m_m-2"}, inplace=True)
-        wells["permeability_0-100_m_m-2"] = 10 ** (
-            wells["permeability_0-100_m_m-2"] / 100
-        )  # rescale permeability (see GLHYMPS README for more information)
-        wells["permeability_0-100_m_m-2"][wells["permeability_0-100_m_m-2"] == 1] = (
-            None  # outlier that needs to be removed
-        )
+        # rescale permeability (see GLHYMPS README for more information)
+        wells["permeability_0-100_m_m-2"] = 10 ** (wells["permeability_0-100_m_m-2"] / 100)
+        # outlier (too high) that needs to be removed
+        wells["permeability_0-100_m_m-2"][wells["permeability_0-100_m_m-2"] == 1] = None
 
     # GLHYMPS - Porosity [0-1]
     if config["modules"]["porosity"]:
         glyhmps = gpd.read_file(config["basepath"] + config["factors"]["porosity"])
         wells = merge_vector_point(glyhmps, wells, ["Porosity"])
-        wells = wells.drop_duplicates(
-            subset="GROW_ID"
-        )  # some duplicates were created in merge_vector_point which are removed here
-        wells.rename(
-            columns={"Porosity": "total_porosity_0-100_m_fraction"}, inplace=True
-        )
+        wells.rename(columns={"Porosity": "total_porosity_0-100_m_fraction"}, inplace=True)
 
     wells.to_csv(
         config["basepath"] + config["output_tables"]["att"], sep=";", index=False
@@ -248,15 +220,10 @@ if config["modules"]["static"]:
             # column name is derived by file name
             merge_raster_static(wells, file, col_name=col_name)
             # Convert numeric values to class names
-            codes = pd.read_csv(
-                config["basepath"] + config["factors"]["soil_texture"]["codes"], sep=";"
-            )
-            wells = pd.merge(
-                wells, codes, how="left", left_on=col_name, right_on="value"
-            ).drop(columns={col_name, "value"})
-            wells.rename(
-                columns={"soil_texture_class": col_name}, inplace=True
-            )  # rename so that the column is not overwriten in the second run of the loop
+            codes = pd.read_csv(config["basepath"] + config["factors"]["soil_texture"]["codes"], sep=";")
+            wells = pd.merge(wells, codes, how="left", left_on=col_name, right_on="value").drop(columns={col_name, "value"})
+            # rename so that the column is not overwriten in the second run of the loop
+            wells.rename(columns={"soil_texture_class": col_name}, inplace=True)
         wells.rename(
             columns={
                 "STC_M_250m_SUBSOIL": "soil_texture_30-200_cm_class",
@@ -273,9 +240,7 @@ if config["modules"]["static"]:
         for file in soilfiles:
             col_name = file[-22:-4]
             merge_raster_static(wells, file, col_name=col_name)
-            wells[col_name] = (
-                wells[col_name] * 0.0001
-            )  # rescale (scaling factor in original data)
+            wells[col_name] = (wells[col_name] * 0.0001)  # rescale (scaling factor in original data)
         wells.rename(
             columns={
                 "sat_M_250m_SUBSOIL": "soil_saturated_conductivity_30-200_cm_cm_d-1",
@@ -303,9 +268,6 @@ if config["modules"]["static"]:
         # the drainage density map is read and the information is merged to the attributes table
         drain_den = gpd.read_file(config["basepath"] + config["factors"]["drain_den"])
         wells = merge_vector_point(drain_den, wells, ["Drainage_d"])
-        wells = wells.drop_duplicates(
-            subset="GROW_ID"
-        )  # some duplicates were created in merge_vector_point which are removed here
         wells.rename(columns={"Drainage_d": "drainage_density_m-1"}, inplace=True)
 
     # Glacier extent [fraction] and Permafrost extent [fraction] from BasinAtlas level 12
@@ -314,9 +276,6 @@ if config["modules"]["static"]:
             config["basepath"] + config["factors"]["glacier_permafrost"]
         )
         wells = merge_vector_point(basins, wells, ["gla_pc_use", "prm_pc_use"])
-        wells = wells.drop_duplicates(
-            subset="GROW_ID"
-        )  # some duplicates were created in merge_vector_point which are removed here
         wells["gla_pc_use"] = wells["gla_pc_use"] / 100  # from percentage to fraction
         wells["prm_pc_use"] = wells["prm_pc_use"] / 100  # from percentage to fraction
         wells.rename(
@@ -334,15 +293,10 @@ if config["modules"]["static"]:
             config["basepath"] + config["factors"]["ggde"]["data"],
             col_name="groundwater_dependent_ecosystems_class",
         )
-        wells["groundwater_dependent_ecosystems_class"] = wells[
-            "groundwater_dependent_ecosystems_class"
-        ].astype(
-            "Int64"
-        )  # convert to Int64 format (normal "int" gets the error: cannot convert float NaN to integer)
-        # convert to numeric values to class names
-        names = pd.read_csv(
-            config["basepath"] + config["factors"]["ggde"]["codes"], sep=";"
-        )
+        # convert to Int64 format (normal "int" gets the error: cannot convert float NaN to integer)
+        wells["groundwater_dependent_ecosystems_class"] = wells["groundwater_dependent_ecosystems_class"].astype("Int64")
+        # convert numeric values to class names
+        names = pd.read_csv(config["basepath"] + config["factors"]["ggde"]["codes"], sep=";")
         wells = pd.merge(
             wells,
             names,
@@ -376,9 +330,7 @@ if config["modules"]["static"]:
         ] = None  # remove 0 that are created because of the last step
 
     # Final export of attributes table
-    wells.to_csv(
-        config["basepath"] + config["output_tables"]["att"], sep=";", index=False
-    )
+    wells.to_csv(config["basepath"] + config["output_tables"]["att"], sep=";", index=False)
 
 ## Earth system variables: Time series
 
@@ -396,11 +348,12 @@ if config["modules"]["timeseries"]:
         """
 
         # trim timeseries by well IDs (one of the 100 parts)
-        # ts = pd.merge(ts, df["GROW_ID"], how="inner", on="GROW_ID")
+        ts = pd.merge(ts, df["GROW_ID"], how="inner", on="GROW_ID")
 
         # MSWEP - 3-hourly precipitation [mm/3 hours]
         if config["modules"]["mswep"]:
             # merge_raster_transient: the raster values are extracted at the well location and exported to a file
+
             merge_raster_transient(
                 df,
                 config["basepath"] + config["factors"]["mswep"],
@@ -440,21 +393,14 @@ if config["modules"]["timeseries"]:
                     bandname=gleam[1][r],
                     col_name=gleam[1][r] + "_" + str(i),
                 )
-                aggregate_merge(
-                    config,
-                    ts,
-                    gleam[1][r],
-                    i,
-                    gleam[1][r] + "_join_" + str(i),
-                    daily=True,
-                )
+                aggregate_merge(config,ts,gleam[1][r],i,gleam[1][r] + "_join_" + str(i),daily=True,)
 
         # ERA5 - daily
         if config["modules"]["era5"]:
             # Potential evapotranspiration [m], Air temperature in 2m [K], Snow depth [m], Leaf area index of low vegetation, Leaf area index of high vegetation
             era5_names = [
-                ["pev", "t2m", "sde", "lai_lv", "lai_hv"],
-                ["pet", "temperature", "snow_depth", "LAI_low", "LAI_high"],
+                ["sde", "pev", "t2m", "lai_lv", "lai_hv"],
+                ["snow_depth", "pet", "temperature", "LAI_low", "LAI_high"],
             ]
 
             for r in range(len(era5_names[0])):
@@ -468,14 +414,7 @@ if config["modules"]["timeseries"]:
                     col_name=era5_names[1][r] + "_" + str(i),
                     era5=True,
                 )
-                aggregate_merge(
-                    config,
-                    ts,
-                    era5_names[1][r],
-                    i,
-                    era5_names[1][r] + "_join_" + str(i),
-                    daily=True,
-                )
+                aggregate_merge(config,ts,era5_names[1][r],i,era5_names[1][r] + "_join_" + str(i),daily=True,)
 
         # GPCC - monthly precipitation [mm/month]
         if config["modules"]["gpcc"]:
@@ -499,14 +438,7 @@ if config["modules"]["timeseries"]:
                 col_name="withdrawal_industrial_" + str(i),
                 isimip=True,
             )
-            aggregate_merge(
-                config,
-                ts,
-                "withdrawal_industrial",
-                i,
-                "withdrawal_industrial_join_" + str(i),
-                yearly=True,
-            )
+            aggregate_merge(config,ts,"withdrawal_industrial",i,"withdrawal_industrial_join_" + str(i),yearly=True,)
 
             # domestic use
             merge_raster_transient(
@@ -517,14 +449,7 @@ if config["modules"]["timeseries"]:
                 col_name="withdrawal_domestic_" + str(i),
                 isimip=True,
             )
-            aggregate_merge(
-                config,
-                ts,
-                "withdrawal_domestic",
-                i,
-                "withdrawal_domestic_join_" + str(i),
-                yearly=True,
-            )
+            aggregate_merge(config,ts,"withdrawal_domestic",i,"withdrawal_domestic_join_" + str(i),yearly=True,)
 
         # Land use fraction - yearly
         if config["modules"]["lu"]:
@@ -544,9 +469,7 @@ if config["modules"]["timeseries"]:
                     col_name=name + "_" + str(i),
                     isimip=True,
                 )
-                aggregate_merge(
-                    config, ts, name, i, name + "_join_" + str(i), yearly=True
-                )
+                aggregate_merge(config, ts, name, i, name + "_join_" + str(i), yearly=True)
 
             # urban area fraction (is in a different nc than the rest)
             merge_raster_transient(
@@ -557,9 +480,7 @@ if config["modules"]["timeseries"]:
                 col_name="urbanareas_" + str(i),
                 isimip=True,
             )
-            aggregate_merge(
-                config, ts, "urbanareas", i, "urbanareas_join_" + str(i), yearly=True
-            )
+            aggregate_merge(config, ts, "urbanareas", i, "urbanareas_join_" + str(i), yearly=True)
 
         # Remove any previous intermediate results ("join_all_...")
         # Otherwise, this file would be selected in the next step as well
@@ -578,10 +499,8 @@ if config["modules"]["timeseries"]:
         # Merge each variable as column to the groundwater table
         for ele in join_files:
             par = pd.read_csv(ele, sep=";")
-            # TODO DN: only load columns to be used instead of removing unused ones
-            # par = pd.read_csv(ele, sep=";", usecols=["GROW_ID", "date", ...])
             # only the columns of "ID", "date" and the variable shall be left, the rest can be removed
-            par.drop(par.columns[5:15], axis=1, inplace=True)
+            par.drop(par.columns[5:16], axis=1, inplace=True)
             par.drop(par.columns[1:4], axis=1, inplace=True)
             par.date = pd.to_datetime(
                 par.date, format="ISO8601"
@@ -617,15 +536,11 @@ if config["modules"]["timeseries"]:
         # split attributes table in 100 parts
         n = len(wells)
         wells_parts = [
-            wells.iloc[
-                i * n // config["cores_num"] : (i + 1) * n // config["cores_num"]
-            ]
+            wells.iloc[i * n // config["cores_num"] : (i + 1) * n // config["cores_num"]]
             for i in range(config["cores_num"])
         ]
 
-        # TODO: add debug flag and set in debug env
-        # with this line, the function can be checked in debug mode
-        total_merge(wells_parts[5], ts, "05")
+        #total_merge(wells_parts[1], ts, "01") # with this line, the function can be checked in debug mode
 
         # create a roadmap where for each of the 100 processes the function that shall run and the inserted parameters are given
         for i, ele in enumerate(wells_parts):
@@ -653,16 +568,101 @@ if config["modules"]["joinall"]:
         parts.append(pd.read_csv(file, sep=";"))
     ts_fin = pd.concat(parts).reset_index(drop=True)
 
+    # add main land use to attributes table
+    wells = pd.read_csv(
+        config["basepath"] + config["output_tables"]["att"], sep=";"
+    )  # import attributes table
+
+    ts_fin_reduced = ts_fin[
+        [
+            "GROW_ID",
+            "forests_and_natural_vegetation",
+            "urbanareas",
+            "cropland_rainfed",
+            "cropland_irrigated",
+            "pastures",
+            "days_with_snow_cover_days_year-1"
+        ]
+    ]  # reduce to land use columns
+    ts_agg = ts_fin_reduced.groupby(
+        by="GROW_ID", as_index=False
+    ).mean()  # aggregate to average land use fraction
+
+    wells_fin = pd.merge(
+        wells, ts_agg, on="GROW_ID", how="outer"
+    )  # merge mean land use fraction to well attributes
+    # find land use with highest fraction per row and set it as main land use
+    wells_fin["main_landuse_class"] = wells_fin[
+        [
+            "forests_and_natural_vegetation",
+            "urbanareas",
+            "cropland_rainfed",
+            "cropland_irrigated",
+            "pastures",
+        ]
+    ].idxmax(axis=1)
+    # if every land use fraction is 0, set main land use to NA
+    wells_fin.main_landuse_class[(wells_fin["forests_and_natural_vegetation"] == 0) &
+        (wells_fin["urbanareas"] == 0) &
+        (wells_fin["cropland_rainfed"] == 0) &
+        (wells_fin["cropland_irrigated"] == 0) &
+        (wells_fin["pastures"] == 0)] = None
+
+    # drop single land use fractions
+    wells_fin.drop(
+        columns=[
+            "forests_and_natural_vegetation",
+            "urbanareas",
+            "cropland_rainfed",
+            "cropland_irrigated",
+            "pastures",
+        ],
+        inplace=True,
+    )
+    wells_fin.rename(columns={"days_with_snow_cover_days_year-1": "days_with_snow_cover_average_days_year-1"}, inplace=True)
+
+    # reorder colums
+    wells_fin = pd.concat([wells_fin.iloc[:, 0:50],
+                           wells_fin.iloc[:, 52],
+                           wells_fin.iloc[:, 50],
+                           wells_fin.iloc[:, 53],
+                           wells_fin.iloc[:, 51]], axis=1)
+
+    ## export attributes as csv, parquet and json
+    # Convert data type to only string so that export as parquet works
+    wells_fin["original_ID_groundwater"] = wells_fin["original_ID_groundwater"].astype("str")
+    wells_fin["name"] = wells_fin["name"].astype("str")
+
+    wells_fin.to_csv(
+        config["basepath"] + config["output_tables"]["att_full"] + ".csv", sep=",", index=False
+    )
+    wells_fin.to_parquet(
+        config["basepath"] + config["output_tables"]["att_full"] + ".parquet",
+        index=False,
+        engine="pyarrow",
+    )
+
+    # export geo-referenced attributes
+    wells_gdf = gpd.GeoDataFrame(
+        wells_fin,
+        geometry=gpd.points_from_xy(wells_fin.longitude, wells_fin.latitude),
+        crs="EPSG:4326",
+    )
+    wells_gdf.to_file(
+        config["basepath"] + config["output_tables"]["att_geo"], index=False
+    )
+
+    ## Clean-up time series
     # Convert Units
     ts_fin["temperature"] = ts_fin["temperature"] - 273  # from K to C°
     # to mm/year
     ts_fin.gpcc = ts_fin.gpcc * 12  # from mm/month to mm/year
-    ts_fin.mswep = ts_fin.mswep * 2920  # from mm/3hours to mm/year
+    ts_fin.mswep = ts_fin.mswep * 365  # from mm/day to mm/year
     ts_fin.Ep = ts_fin.Ep * 365  # from mm/day to mm/year
     ts_fin.E = ts_fin.E * 365  # from mm/day to mm/year
     ts_fin.Ei = ts_fin.Ei * 365  # from mm/day to mm/year
     ts_fin.pet = (
-        ts_fin.pet * 365 * 1000 * -1
+            ts_fin.pet * 365 * 1000 * -1
     )  # from m/day to mm/year; in ERA5-Land PET is negative as upward flux --> change the sign
 
     # Reorder and rename columns
@@ -672,7 +672,7 @@ if config["modules"]["joinall"]:
     # reorder columns
     ts_fin = pd.concat(
         [
-            ts_fin.iloc[:, :13],
+            ts_fin.iloc[:, :14],
             ts_fin.mswep,
             ts_fin.gpcc,
             ts_fin.pet,
@@ -681,6 +681,7 @@ if config["modules"]["joinall"]:
             ts_fin.Ei,
             ts_fin.temperature,
             ts_fin.snow_depth,
+            ts_fin["days_with_snow_cover_days_year-1"],
             ts_fin.ndvi,
             ts_fin.LAI_low,
             ts_fin.LAI_high,
@@ -697,12 +698,17 @@ if config["modules"]["joinall"]:
     # rename columns
     ts_fin.rename(
         columns={
+            "groundwater_depth_from_top_elevation_m":"groundwater_depth_from_well_top_elevation_m",
+            "groundwater_water_level_m_asl":"groundwater_water_level_elevation_m_asl",
+            'groundwater_filled_depth_from_top_elevation_m':'groundwater_filled_depth_from_well_top_elevation_m',
+            'groundwater_filled_water_level_m_asl':'groundwater_filled_water_level_elevation_m_asl',
+            "outliers": "outliers_change_points",
             "mswep": "precipitation_mswep_mm_year-1",
             "gpcc": "precipitation_gpcc_mm_year-1",
             "pet": "potential_evapotranspiration_era5_mm_year-1",
             "Ep": "potential_evapotranspiration_gleam_mm_year-1",
             "E": "actual_evapotranspiration_mm_year-1",
-            "temperature": "air_temperature_C°",
+            "temperature": "air_temperature_°C",
             "snow_depth": "snow_depth_m",
             "Ei": "interception_mm_year-1",
             "ndvi": "ndvi_ratio",
@@ -720,83 +726,5 @@ if config["modules"]["joinall"]:
     )
 
     # final export of full time series table
-    ts_fin.to_csv(
-        config["basepath"] + config["output_tables"]["ts"] + ".csv",
-        sep=";",
-        index=False,
-    )
-    ts_fin.to_parquet(
-        config["basepath"] + config["output_tables"]["ts"] + ".parquet", index=False
-    )
-
-    # add main land use to attributes table
-    wells = pd.read_csv(
-        config["basepath"] + config["output_tables"]["att"], sep=";"
-    )  # import attributes table
-
-    ts_fin_reduced = ts_fin[
-        [
-            "GROW_ID",
-            "forests_natural_vegetation_fraction",
-            "urban_area_fraction",
-            "cropland_rainfed_fraction",
-            "cropland_irrigated_fraction",
-            "pastures_fraction",
-        ]
-    ]  # reduce to land use columns
-    ts_agg = ts_fin_reduced.groupby(
-        by="GROW_ID", as_index=False
-    ).mean()  # aggregate to average land use fraction
-
-    wells_fin = pd.merge(
-        wells, ts_agg, on="GROW_ID", how="outer"
-    )  # merge mean land use fraction to well attributes
-    # find land use with highest fraction per row and set it as main land use
-    wells_fin["main_landuse_class"] = wells_fin[
-        [
-            "forests_natural_vegetation_fraction",
-            "urban_area_fraction",
-            "cropland_rainfed_fraction",
-            "cropland_irrigated_fraction",
-            "pastures_fraction",
-        ]
-    ].idxmax(axis=1)
-    # drop single land use fractions
-    wells_fin.drop(
-        columns=[
-            "forests_natural_vegetation_fraction",
-            "urban_area_fraction",
-            "cropland_rainfed_fraction",
-            "cropland_irrigated_fraction",
-            "pastures_fraction",
-        ],
-        inplace=True,
-    )
-
-    ## export attributes as csv, parquet and json
-    # Convert data type to only string so that export as parquet works
-    wells_fin["original_ID_groundwater"] = wells_fin["original_ID_groundwater"].astype(
-        "str"
-    )
-    wells_fin["name"] = wells_fin["name"].astype("str")
-
-    wells_fin.to_csv(
-        config["basepath"] + config["output_tables"]["att_full"] + ".csv",
-        sep=";",
-        index=False,
-    )
-    wells_fin.to_parquet(
-        config["basepath"] + config["output_tables"]["att_full"] + ".parquet",
-        index=False,
-        engine="pyarrow",
-    )
-
-    # export geo-referenced attributes
-    wells_gdf = gpd.GeoDataFrame(
-        wells_fin,
-        geometry=gpd.points_from_xy(wells_fin.longitude, wells_fin.latitude),
-        crs="EPSG:4326",
-    )
-    wells_gdf.to_file(
-        config["basepath"] + config["output_tables"]["att_geo"], index=False
-    )
+    ts_fin.to_csv(config["basepath"] + config["output_tables"]["ts"] + ".csv", sep=",", index=False)
+    ts_fin.to_parquet(config["basepath"] + config["output_tables"]["ts"] + ".parquet", index=False)
