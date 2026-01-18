@@ -18,7 +18,7 @@ vegetation, and anthropogenic variables (e.g., precipitation, drainage density, 
 -------------------------------------------------------
 
 <br/>
-The data set can be found at: https://doi.org/10.5281/zenodo.15149480
+The dataset can be found at: https://doi.org/10.5281/zenodo.15149480
 
 References and descriptions to the original data can be found in:
 
